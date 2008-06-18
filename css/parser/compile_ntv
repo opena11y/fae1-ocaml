@@ -1,0 +1,3 @@
+ocamlopt -c -I ../../ -I ../../html/parser str.cmxa stringlib.cmx scanner.cmx tokenizer.ml
+ocamlopt -c -w p -I ../../ -I ../ -I ../../html/parser str.cmxa stringlib.cmx scanner.cmx tokenizer.cmx css.cmx cssparser.ml
+ocamlopt -I ../ -I ../../ -I ../../html/parser -I ../../system str.cmxa stringlib.cmx filesys.cmx scanner.cmx tokenizer.cmx css.cmx cssparser.cmx csstest.ml

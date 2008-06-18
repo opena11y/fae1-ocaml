@@ -1,0 +1,10 @@
+#! /bin/bash
+FLAGS=$1
+
+ocamlopt -c scanner.mli
+ocamlopt -c scanner.ml
+ocamlopt -c -I ../ html.cmxa scanner.cmx tokenizer.mli
+ocamlopt -c -w $FLAGS -I ../ html.cmxa scanner.cmx tokenizer.ml
+ocamlopt -c -I ../ html.cmxa tokenizer.cmx parser.mli
+ocamlopt -c -I ../ html.cmxa tokenizer.cmx parser.ml
+ocamlopt -a scanner.cmx tokenizer.cmx parser.cmx -o html_parser.cmxa

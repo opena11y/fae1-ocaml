@@ -1,0 +1,21 @@
+#! /bin/bash
+
+rm -f *.cmi *.cmx *.o
+
+cd ./graphics
+rm -f *.a *.cmi *.cmx *.cmxa *.o
+cd ..
+
+cd ./html
+rm -f *.a *.cmi *.cmx *.cmxa *.o
+cd ./parser
+rm -f *.a *.cmi *.cmx *.cmxa *.o
+cd ../..
+
+cd system
+rm -f *.cmi *.cmx *.o
+cd ..
+
+cd tests
+rm -f *.a *.cmi *.cmx *.cmxa *.o a.out
+cd ..

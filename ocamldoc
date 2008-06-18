@@ -1,0 +1,2 @@
+#! /bin/bash
+ocamldoc -html -d /home/nhoyt/public_html/ocaml -t "FAE Analysis Engine" -I graphics -I html -I html/parser -I system -I tests *.ml graphics/*.ml html/*.ml html/parser/*.ml system/*.ml tests/*.ml

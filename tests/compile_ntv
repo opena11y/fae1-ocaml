@@ -1,0 +1,16 @@
+#! /bin/bash
+FLAGS=$1
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navigation.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx text.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx automation.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx standards.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx style.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa unix.cmxa str.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.ml
+
+ocamlopt -a navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.cmx -o wamttests.cmxa

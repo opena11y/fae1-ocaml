@@ -1,0 +1,4 @@
+#! /bin/bash
+FLAGS=$1
+
+ocamlopt -c -w $FLAGS filesys.ml
