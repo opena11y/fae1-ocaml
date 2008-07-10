@@ -222,6 +222,13 @@ let get_trimmed_content_weight tag =
   in
     f 0 (Html.tag_children tag);;
 
+(**
+  Given a tag, test whether content weight is greater than zero.
+*)
+let has_content tag =
+  let weight = get_trimmed_content_weight tag in
+    weight > 0;;
+
 (* FUNCTIONS WITH HASHTBL ARG *)
 
 (**
@@ -265,6 +272,47 @@ let count_matches re str =
     with Not_found -> count
   in
     f 0 0;;
+
+(**
+   Replace all contiguous sequences of nonalphanumeric characters
+   in s with a single space character.
+*)
+let replace_nonalphanumeric s =
+  Str.global_replace (Str.regexp "[^a-zA-Z0-9]+") " " s;;
+
+(**
+   Split the string s on one or more space characters
+   and return the resulting list.
+*)
+let split_spaces s =
+  Str.split (Str.regexp " +") s;;
+
+(**
+   Match each word in src string with tgt string, ignoring case,
+   spacing and punctuation. If seq (sequential match) flag is set,
+   begin the search for each word in src at the next character in
+   tgt just beyond the previous word; otherwise search from the
+   beginning of tgt for each word in src.
+*)
+let match_words src tgt seq =
+  let words = split_spaces (replace_nonalphanumeric src) in
+    if List.length words = 0 then false
+    else (
+      let rec f lst pos =
+        match lst with
+            hd :: tl -> (
+              let re = Str.regexp_case_fold hd in
+                try
+                  let idx = Str.search_forward re tgt pos in
+                    if seq
+                    then f tl (idx + (String.length hd))
+                    else f tl pos
+                with Not_found -> false
+            )
+          | [] -> true
+      in
+        f words 0
+    );;
 
 (* CALCULATION AND CONVERSION FUNCTIONS *)
 

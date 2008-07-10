@@ -33,6 +33,8 @@ val get_child_elements :
   Html.htmlItem Html.tag -> Html.htmlItem Html.tag list;;
 val get_trimmed_content_weight :
   Html.htmlItem Html.tag -> int;;
+val has_content :
+  Html.htmlItem Html.tag -> bool;;
 
 val get_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> Html.htmlItem Html.tag list;;
@@ -45,6 +47,12 @@ val icontains :
   string -> string -> bool;;
 val count_matches :
   Str.regexp -> string -> int;;
+val replace_nonalphanumeric :
+  string -> string;;
+val split_spaces :
+  string -> string list;;
+val match_words :
+  string -> string -> bool -> bool;;
 
 val int_of_bool :
   bool -> int;;

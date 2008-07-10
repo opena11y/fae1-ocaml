@@ -15,7 +15,7 @@ exception TagNotFound;;
 
 (* HELPER FUNCTIONS *)
 
-let get_headers page =
+let get_heading_elements page =
   let tbl = Html.tag_tbl (Page.document page) in
   let h1 = try Hashtbl.find tbl "H1" with _ -> [] in
   let h2 = try Hashtbl.find tbl "H2" with _ -> [] in
@@ -173,8 +173,8 @@ let test002p site page =
   let test_id = "nav002p" in
     Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
-    let h1_lst = try Hashtbl.find tbl "H1" with _ -> [] in
-    let count = List.length h1_lst in
+    let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
+    let count = List.length h1s in
     let results = [
       ("b1", Testutil.int_of_bool (count = 1 || count = 2));
       ("cnt1", count)
@@ -230,129 +230,6 @@ let test003s site pg_results =
       ("tot1", sum_t);
       ("pct1", site_pct);
       ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 004p: Find the density of content in header elements vs. the
-   total content available on the page. *)
-let test004p site page =
-  let test_id = "nav004p" in
-    Testutil.msg test_id;
-    let g a = Html.Tag(a) in
-    let headers = List.map (g) (get_headers page) in
-    let header_weight = Html.get_node_content_weight 0 headers in
-    let page_weight =
-      Html.get_node_content_weight 0 (Html.doc_model (Page.document page))
-    in
-    let density = Testutil.pct_of_ints header_weight page_weight in
-    let results = [
-      ("cnt1", header_weight);
-      ("tot1", page_weight);
-      ("pct1", density);
-      ("tot2", List.length headers)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 004s: sitewide aggregation of 004p results *)
-let test004s site pg_results =
-  let test_id = "nav004s" in
-    Testutil.msg test_id;
-    let (sum_hw, sum_pw, sum_r, pg_count) =
-      Wamtml.sum_results_ratios "cnt1" "tot1" "nav004p" pg_results
-    in
-    let avg_density = Testutil.pct_of_ratio (Testutil.avg_of_ratios sum_r pg_count) in
-    let results = [
-      ("pct1", avg_density)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-let check_for_accesskey key_str page =
-  let top_tag = Html.doc_model (Page.document page) in
-  let a_keys = Html.collect_elements_with_attr "accesskey" top_tag [] in
-  let f a b =
-    let attr = Html.get_attribute b "accesskey" in
-      if Html.attr_value attr = key_str
-      then 1
-      else a
-  in
-  let e = List.fold_left f 0 a_keys in
-    (e > 0);;
-
-(* ---------------------------------------------------------------- *)
-(** 005p: Check to see if accesskey 1 is defined *)
-let test005p site page =
-  let test_id = "nav005p" in
-    Testutil.msg test_id;
-    let found = check_for_accesskey "1" page in
-    let results = [
-      ("b1", Testutil.int_of_bool found)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 005s: sitewide aggregation of 005p results *)
-let test005s site pg_results =
-  let test_id = "nav005s" in
-    Testutil.msg test_id;
-    let (sum_b, pg_count) = Wamtml.sum_result "b1" "nav005p" pg_results in
-    let percent = Testutil.pct_of_ints sum_b pg_count in
-    let results = [
-      ("cnt1", sum_b);
-      ("tot1", pg_count);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 006p: Check to see if accesskey 2 is defined *)
-let test006p site page =
-  let test_id = "nav006p" in
-    Testutil.msg test_id;
-    let found = check_for_accesskey "2" page in
-    let results = [
-      ("b1", Testutil.int_of_bool found)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 006s: sitewide aggregation of 006p results *)
-let test006s site pg_results =
-  let test_id = "nav006s" in
-    Testutil.msg test_id;
-    let (sum_b, pg_count) = Wamtml.sum_result "b1" "nav006p" pg_results in
-    let percent = Testutil.pct_of_ints sum_b pg_count in
-    let results = [
-      ("cnt1", sum_b);
-      ("tot1", pg_count);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 007p: Check to see if accesskey 3 is defined *)
-let test007p site page =
-  let test_id = "nav007p" in
-    Testutil.msg test_id;
-    let found = check_for_accesskey "3" page in
-    let results = [
-      ("b1", Testutil.int_of_bool found)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 007s: sitewide aggregation of 007p results *)
-let test007s site pg_results =
-  let test_id = "nav007s" in
-    Testutil.msg test_id;
-    let (sum_b, pg_count) = Wamtml.sum_result "b1" "nav007p" pg_results in
-    let percent = Testutil.pct_of_ints sum_b pg_count in
-    let results = [
-      ("cnt1", sum_b);
-      ("tot1", pg_count);
-      ("pct1", percent)
     ] in
       Wamtml.create_wamt_test test_id results;;
 
@@ -415,13 +292,13 @@ let test009p site page =
       if total_titles > 0 && total_h1s > 0
       then
         let title_content = Testutil.normalize_space (Html.get_node_content "" [Html.Tag (List.hd titles)]) in
-        let is_substring a b =
+        let is_match a b =
           let h1_content = Testutil.normalize_space (Html.get_node_content "" [Html.Tag b]) in
-            if Testutil.icontains title_content h1_content
+            if Testutil.match_words h1_content title_content true
             then a + 1
             else a
         in
-          List.fold_left is_substring 0 h1s
+          List.fold_left is_match 0 h1s
       else 0
     in
     let results = [
@@ -714,7 +591,7 @@ let test014s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 015p: Each page must have a title element *)
+(** 015p: does page have exactly one title element *)
 let test015p site page =
   let test_id = "nav015p" in
     Testutil.msg test_id;
@@ -740,5 +617,94 @@ let test015s site pg_results =
       ("cnt1", count);
       ("tot1", pg_count);
       ("pct1", percent);
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 016p: number of empty title elements *)
+let test016p site page =
+  let test_id = "nav016p" in
+    Testutil.msg test_id;
+    let tag_tbl = Html.tag_tbl (Page.document page) in
+    let titles = try Hashtbl.find tag_tbl "TITLE" with _ -> [] in
+    let titles_with_content = List.filter Testutil.has_content titles in
+    let total = List.length titles in
+    let results = [
+      ("cnt1", total - List.length titles_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 016s: sitewide aggregation of 016p results *)
+let test016s site pg_results =
+  let test_id = "nav016s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav016p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count);
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 100p: number of empty heading elements *)
+let test100p site page =
+  let test_id = "nav100p" in
+    Testutil.msg test_id;
+    let headings = get_heading_elements page in
+    let headings_with_content = List.filter Testutil.has_content headings in
+    let total = List.length headings in
+    let results = [
+      ("cnt1", total - List.length headings_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 100s: sitewide aggregation of 100p results *)
+let test100s site pg_results =
+  let test_id = "nav100s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav100p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 101p: h1 elements: cnt1: empty elements; tot1: total elements *)
+let test101p site page =
+  let test_id = "nav101p" in
+    Testutil.msg test_id;
+    let tbl = Html.tag_tbl (Page.document page) in
+    let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
+    let h1s_with_content = List.filter Testutil.has_content h1s in
+    let total = List.length h1s in
+    let results = [
+      ("cnt1", total - List.length h1s_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 101s: sitewide aggregation of 101p results *)
+let test101s site pg_results =
+  let test_id = "nav101s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav101p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count)
     ] in
       Wamtml.create_wamt_test test_id results;;

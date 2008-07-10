@@ -6,10 +6,10 @@ let site_tests = [
   Navigation.test001s;
   Navigation.test002s;
   Navigation.test003s;
-  Navigation.test004s;
-  Navigation.test005s;
-  Navigation.test006s;
-  Navigation.test007s;
+  (* Navigation.test004s; *)
+  (* Navigation.test005s; *)
+  (* Navigation.test006s; *)
+  (* Navigation.test007s; *)
   Navigation.test008s;
   Navigation.test009s;
   Navigation.test010s;
@@ -17,6 +17,9 @@ let site_tests = [
   Navigation.test013s;
   Navigation.test014s;
   Navigation.test015s;
+  Navigation.test016s;
+  Navigation.test100s;
+  Navigation.test101s;
 
   Text.test001s;
   Text.test002s;
@@ -43,10 +46,10 @@ let site_tests = [
 let page_tests = [
   Navigation.test002p;
   Navigation.test003p;
-  Navigation.test004p;
-  Navigation.test005p;
-  Navigation.test006p;
-  Navigation.test007p;
+  (* Navigation.test004p; *)
+  (* Navigation.test005p; *)
+  (* Navigation.test006p; *)
+  (* Navigation.test007p; *)
   Navigation.test008p;
   Navigation.test009p;
   Navigation.test010p;
@@ -55,6 +58,9 @@ let page_tests = [
   Navigation.test013p;
   Navigation.test014p;
   Navigation.test015p;
+  Navigation.test016p;
+  Navigation.test100p;
+  Navigation.test101p;
 
   Text.test001p;
   Text.test002p;
