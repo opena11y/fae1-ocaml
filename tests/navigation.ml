@@ -291,14 +291,14 @@ let test009p site page =
     let pass_h1s =
       if total_titles > 0 && total_h1s > 0
       then
-        let title_content = Testutil.normalize_space (Html.get_node_content "" [Html.Tag (List.hd titles)]) in
-        let is_match a b =
-          let h1_content = Testutil.normalize_space (Html.get_node_content "" [Html.Tag b]) in
-            if Testutil.match_words h1_content title_content true
+        let title_content = Testutil.normalize_alphanumeric (Html.get_node_content "" [Html.Tag (List.hd titles)]) in
+        let is_substring a b =
+          let h1_content = Testutil.normalize_alphanumeric (Html.get_node_content_with_img_alt "" [Html.Tag b]) in
+            if Testutil.icontains title_content h1_content
             then a + 1
             else a
         in
-          List.fold_left is_match 0 h1s
+          List.fold_left is_substring 0 h1s
       else 0
     in
     let results = [

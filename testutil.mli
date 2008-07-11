@@ -49,10 +49,12 @@ val count_matches :
   Str.regexp -> string -> int;;
 val replace_nonalphanumeric :
   string -> string;;
+val normalize_alphanumeric :
+  string -> string;;
 val split_spaces :
   string -> string list;;
 val match_words :
-  string -> string -> bool -> bool;;
+  string -> string -> bool;;
 
 val int_of_bool :
   bool -> int;;

@@ -93,6 +93,26 @@ let get_attribute t attr =
     f (t.attributes);;
 
 (**
+   If tag t has attribute with key attr, return the
+   attribute value; otherwise return an empty string.
+*)
+let get_attribute_value t attr =
+  try
+    let a = get_attribute t attr in
+      attr_value a
+  with Attribute_Not_Found -> "";;
+
+(**
+   Return get_attribute_value t attr with space
+   character padding if non-null.
+*)
+let get_attribute_value_with_padding t attr =
+  let value = get_attribute_value t attr in
+    if value = ""
+    then value
+    else " " ^ value ^ " ";;
+
+(**
    Checks to see if the tag t contains an attribute
    with key attr where the value of the attribute is
    not the empty string. Returns true if such an
@@ -350,6 +370,24 @@ let rec get_node_content c n_lst =
           | Entity s -> get_node_content (c^"&"^s^";") tl
           | Text s -> get_node_content (c^(escapetoxml s)) tl
           | _ -> get_node_content c tl
+      )
+    | [] -> c;;
+
+(**
+   Return the text content of node list n_lst with the addition, in
+   document order, of any ALT text found in any IMG tags.
+*)
+let rec get_node_content_with_img_alt c n_lst =
+  match n_lst with
+      hd::tl -> (
+        match hd with
+            Tag t -> let children = tag_children t in
+              if t.name = "IMG"
+              then get_node_content_with_img_alt (c^(get_attribute_value_with_padding t "alt")) (children@tl)
+              else get_node_content_with_img_alt c (children@tl)
+          | Entity s -> get_node_content_with_img_alt (c^"&"^s^";") tl
+          | Text s -> get_node_content_with_img_alt (c^(escapetoxml s)) tl
+          | _ -> get_node_content_with_img_alt c tl
       )
     | [] -> c;;
 

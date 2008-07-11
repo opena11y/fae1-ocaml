@@ -281,6 +281,13 @@ let replace_nonalphanumeric s =
   Str.global_replace (Str.regexp "[^a-zA-Z0-9]+") " " s;;
 
 (**
+   Same as replace_nonalphanumeric s, but with leading
+   and trailing space characters removed.
+*)
+let normalize_alphanumeric s =
+  trim (replace_nonalphanumeric s);;
+
+(**
    Split the string s on one or more space characters
    and return the resulting list.
 *)
@@ -294,7 +301,7 @@ let split_spaces s =
    tgt just beyond the previous word; otherwise search from the
    beginning of tgt for each word in src.
 *)
-let match_words src tgt seq =
+let match_words src tgt =
   let words = split_spaces (replace_nonalphanumeric src) in
     if List.length words = 0 then false
     else (
@@ -304,9 +311,7 @@ let match_words src tgt seq =
               let re = Str.regexp_case_fold hd in
                 try
                   let idx = Str.search_forward re tgt pos in
-                    if seq
-                    then f tl (idx + (String.length hd))
-                    else f tl pos
+                    f tl (idx + (String.length hd))
                 with Not_found -> false
             )
           | [] -> true
