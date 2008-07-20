@@ -250,13 +250,21 @@ let count_tags tbl name =
 
 (** Returns true if sub is found in str, false otherwise. *)
 let contains str sub =
-  let pattern = ".*" ^ sub ^ ".*" in
-    Str.string_match (Str.regexp pattern) str 0;;
+  if (String.length sub) = 0
+  then false
+  else (
+    try (Str.search_forward (Str.regexp sub) str 0) >= 0
+    with Not_found -> false
+  );;
 
 (** Case-insensitive version of contains. *)
 let icontains str sub =
-  let pattern = ".*" ^ (String.lowercase sub) ^ ".*" in
-    Str.string_match (Str.regexp pattern) (String.lowercase str) 0;;
+  if (String.length sub) = 0
+  then false
+  else (
+    try (Str.search_forward (Str.regexp_case_fold sub) str 0) >= 0
+    with Not_found -> false
+  );;
 
 (**
   Return the number of substrings that match regular

@@ -5,21 +5,21 @@
 let site_tests = [
   Navigation.test001s;
   Navigation.test002s;
-  Navigation.test003s;
-  (* Navigation.test004s; *)
-  (* Navigation.test005s; *)
-  (* Navigation.test006s; *)
-  (* Navigation.test007s; *)
-  Navigation.test008s;
-  Navigation.test009s;
+  Navigation.test004s;
+
   Navigation.test010s;
   Navigation.test011s;
-  Navigation.test013s;
-  Navigation.test014s;
-  Navigation.test015s;
-  Navigation.test016s;
-  Navigation.test100s;
-  Navigation.test101s;
+  Navigation.test012s; (* unique titles: no page test *)
+
+  Navigation.test020s;
+  Navigation.test021s;
+  Navigation.test022s;
+  Navigation.test023s;
+
+  Navigation.test030s;
+  Navigation.test031s;
+
+  Navigation.test041s;
 
   Text.test001s;
   Text.test002s;
@@ -44,23 +44,23 @@ let site_tests = [
 ];;
 
 let page_tests = [
-  Navigation.test002p;
-  Navigation.test003p;
-  (* Navigation.test004p; *)
-  (* Navigation.test005p; *)
-  (* Navigation.test006p; *)
-  (* Navigation.test007p; *)
-  Navigation.test008p;
-  Navigation.test009p;
+  Navigation.test001p; (* nav menus & h1s *)
+  Navigation.test002p; (* area elements *)
+  Navigation.test003p; (* data tables: no site test *)
+  Navigation.test004p; (* frame titles *)
+
   Navigation.test010p;
   Navigation.test011p;
-  Navigation.test012p;
-  Navigation.test013p;
-  Navigation.test014p;
-  Navigation.test015p;
-  Navigation.test016p;
-  Navigation.test100p;
-  Navigation.test101p;
+
+  Navigation.test020p;
+  Navigation.test021p;
+  Navigation.test022p;
+  Navigation.test023p;
+
+  Navigation.test030p;
+  Navigation.test031p;
+
+  Navigation.test041p;
 
   Text.test001p;
   Text.test002p;
