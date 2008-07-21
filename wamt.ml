@@ -24,6 +24,7 @@ let user     = ref "";;
 let url_list = ref "";;
 let depth    = ref "";;
 let span     = ref "";;
+let version  = ref "";;
 
 let arg_list = [
   ("-dir", Arg.Set_string(site_dir),
@@ -41,7 +42,9 @@ let arg_list = [
   ("-depth", Arg.Set_string(depth),
    "The link-following depth used as argument to wget.");
   ("-span", Arg.Set_string(span),
-   "The span host option used as argument to wget.")
+   "The span host option used as argument to wget.");
+  ("-version", Arg.Set_string(version),
+   "The version ID of the ruleset being used.")
 ];;
 
 let anon_fun s = ();;
@@ -161,6 +164,7 @@ let process_site site =
         !url_list
         !depth
         !span
+        !version
         (page_reports)
         (List.fold_left run_site_tests [] site_tests);;
 
@@ -192,6 +196,9 @@ let wamt () =
 
   if (!span = "")
   then (span := "Unspecified");
+
+  if (!version = "")
+  then (version := "Unspecified");
 
   if debug
   then Printf.printf "start: %.3f\n" (Unix.gettimeofday ());
