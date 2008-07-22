@@ -2,6 +2,8 @@
    Lists that define which tests are currently run by the analysis engine
 *)
 
+let version = "1.0.0";;
+
 let site_tests = [
   Navigation.test001s;
   Navigation.test002s;
