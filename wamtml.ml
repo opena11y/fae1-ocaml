@@ -164,7 +164,7 @@ let wamt_site_report_to_xml r =
       List.fold_left g "" r.site_test_results
   in
     Printf.sprintf "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE results SYSTEM \"../xml/results.dtd\">\n<results>\n<meta>\n<title>%s</title>\n<date>%s</date>\n<user>%s</user>\n<urls>%s</urls>\n<depth>%s</depth>\n<span>%s</span>\n<version>%s</version>\n</meta>\n%s<site>\n%s</site>\n</results>\n"
-      r.title
+      (replace_xml_special_chars r.title)
       r.date_time
       r.user
       (urls_to_xml r.urls)

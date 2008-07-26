@@ -35,6 +35,8 @@ val get_trimmed_content_weight :
   Html.htmlItem Html.tag -> int;;
 val has_content :
   Html.htmlItem Html.tag -> bool;;
+val has_content_with_img_alt :
+  Html.htmlItem Html.tag -> bool;;
 
 val get_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> Html.htmlItem Html.tag list;;

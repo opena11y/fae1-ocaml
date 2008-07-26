@@ -229,6 +229,13 @@ let has_content tag =
   let weight = get_trimmed_content_weight tag in
     weight > 0;;
 
+(**
+  Given a tag, test whether content weight, including img alt text, is greater than zero.
+*)
+let has_content_with_img_alt tag =
+  let content = Html.get_node_content_with_img_alt "" [Html.Tag tag] in
+    String.length (trim content) > 0;;
+
 (* FUNCTIONS WITH HASHTBL ARG *)
 
 (**

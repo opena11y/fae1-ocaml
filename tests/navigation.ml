@@ -141,9 +141,9 @@ let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l lst =
 
 (* ---------------------------------------------------------------- *)
 (** 001p: Return the number of navigation menus (ul and ol elements for
-   which all or all but one of their li children contain only a link
-   element OR a link element plus a nested navigation menu) that are
-   immediately preceded by a header element. *)
+    which all or all but one of their li children contain only a link
+    element OR a link element plus a nested navigation menu) that are
+    immediately preceded by a header element. *)
 let test001p site page =
   let test_id = "nav001p" in
     Testutil.msg test_id;
@@ -177,7 +177,11 @@ let test001s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 002p: How many of the area tags have redundant text links? *)
+(** 002p: Check that all area tags have redundant text links.
+    @return cnt1: number of area tags with redundant text links
+    @return tot1: total number of area tags
+    @return pct1: percent of area tags that meet criteria
+*)
 let test002p site page =
   let test_id = "nav002p" in
     Testutil.msg test_id;
@@ -226,9 +230,9 @@ let test002s site pg_results =
 
 (* ---------------------------------------------------------------- *)
 (** 003p: This test determines which tables on a page are data tables.
-   It also stores some additional information about those tables so
-   we don't have to process things multiple times. This test MUST be
-   run before other tests with dependences on that additional info. *)
+    It also stores some additional information about those tables so
+    we don't have to process things multiple times. This test MUST be
+    run before other tests with dependences on that additional info. *)
 let test003p site page =
   let test_id = "nav003p" in
     Testutil.msg test_id;
@@ -297,7 +301,10 @@ let test004s site pg_results =
 (* TITLE ELEMENT *)
 (* ---------------------------------------------------------------- *)
 
-(** 010p: number of empty title elements *)
+(** 010p: Find the number of empty title elements.
+    @return cnt1: number of empty title elements
+    @return tot1: total number of title elements
+*)
 let test010p site page =
   let test_id = "nav010p" in
     Testutil.msg test_id;
@@ -327,7 +334,10 @@ let test010s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 011p: does page have exactly one title element *)
+(** 011p: Test whether page has exactly one title element.
+    @return b1: true if criterion met, false otherwise
+    @return cnt1: number of title elements
+*)
 let test011p site page =
   let test_id = "nav011p" in
     Testutil.msg test_id;
@@ -396,13 +406,16 @@ let test012s site pg_results =
 (* H1 ELEMENTS *)
 (* ---------------------------------------------------------------- *)
 
-(** 020p: number of empty h1 elements: cnt1: empty elements; tot1: total elements *)
+(** 020p: Test for empty h1 elements, taking img alt text into account.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
+*)
 let test020p site page =
   let test_id = "nav020p" in
     Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
-    let h1s_with_content = List.filter Testutil.has_content h1s in
+    let h1s_with_content = List.filter Testutil.has_content_with_img_alt h1s in
     let total = List.length h1s in
     let results = [
       ("cnt1", total - List.length h1s_with_content);
@@ -426,7 +439,10 @@ let test020s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 021p: page must have at least one h1 element *)
+(** 021p: Test that page has at least one h1 element.
+    @return b1: true if criterion met, false otherwise
+    @return cnt1: number of h1 elements
+*)
 let test021p site page =
   let test_id = "nav021p" in
     Testutil.msg test_id;
@@ -455,7 +471,10 @@ let test021s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 022p: page should have no more than two h1 elements *)
+(** 022p: Test that page has no more than two h1 elements.
+    @return b1: true if criterion met
+    @return cnt1: number of h1 elements
+*)
 let test022p site page =
   let test_id = "nav022p" in
     Testutil.msg test_id;
@@ -484,11 +503,12 @@ let test022s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 023p: Does text content of each h1 match all or part of title content?
-    cnt1: count of h1s on page where content is a substring of title element
-    tot1: total h1 elements on page
-    pct1: percentage of h1s on page that pass substring test
-    tot2: total title elements on page
+(** 023p: Test that the text content of each h1 matches all or part of
+    the title content.
+    @return cnt1: count of h1s that do not match
+    @return tot1: total h1 elements on page
+    @return pct1: percentage of h1s on page that do not match
+    @return tot2: total title elements on page
 *)
 let test023p site page =
   let test_id = "nav023p" in
@@ -511,10 +531,11 @@ let test023p site page =
           List.fold_left is_substring 0 h1s
       else 0
     in
+    let fail_h1s = total_h1s - pass_h1s in
     let results = [
-      ("cnt1", pass_h1s);
+      ("cnt1", fail_h1s);
       ("tot1", total_h1s);
-      ("pct1", Testutil.pct_of_ints pass_h1s total_h1s);
+      ("pct1", Testutil.pct_of_ints fail_h1s total_h1s);
       ("tot2", total_titles)
     ] in
       Wamtml.create_wamt_test test_id results;;
@@ -535,15 +556,52 @@ let test023s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
+(** 024p: Find the number of empty h1 elements, excluding img alt text.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
+*)
+let test024p site page =
+  let test_id = "nav024p" in
+    Testutil.msg test_id;
+    let tbl = Html.tag_tbl (Page.document page) in
+    let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
+    let h1s_with_content = List.filter Testutil.has_content h1s in
+    let total = List.length h1s in
+    let results = [
+      ("cnt1", total - List.length h1s_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 024s: sitewide aggregation of 024p results *)
+let test024s site pg_results =
+  let test_id = "nav024s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav024p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (* SUBHEADING ELEMENTS *)
 (* ---------------------------------------------------------------- *)
 
-(** 030p: number of empty subheading elements (h2..h6) *)
+(** 030p: Find the number of empty subheading elements (h2..h6),
+    taking img alt text into account.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
+*)
 let test030p site page =
   let test_id = "nav030p" in
     Testutil.msg test_id;
     let subheadings = get_subheading_elements page in
-    let subheadings_with_content = List.filter Testutil.has_content subheadings in
+    let subheadings_with_content = List.filter Testutil.has_content_with_img_alt subheadings in
     let total = List.length subheadings in
     let results = [
       ("cnt1", total - List.length subheadings_with_content);
@@ -567,8 +625,13 @@ let test030s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 031p: Of the header elements that follow the last h1 element,
-    how many are improperly nested *)
+(** 031p: Of the heading elements that follow the last h1 element,
+    find how many are improperly nested.
+    @return cnt1: number of offenders
+    @return tot1: total number of heading elements that follow the last h1
+    @return cnt2: number of h1 elements
+    @return tot2: total number of heading elements
+*)
 let test031p site page =
   let test_id = "nav031p" in
     Testutil.msg test_id;
@@ -632,10 +695,43 @@ let test031s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 032p: Return total number of subheading elements and counts for h2..h6 *)
-(*
+(** 032p: Find the number of empty subheading elements (h2..h6),
+    excluding img alt text.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
+*)
 let test032p site page =
   let test_id = "nav032p" in
+    Testutil.msg test_id;
+    let subheadings = get_subheading_elements page in
+    let subheadings_with_content = List.filter Testutil.has_content subheadings in
+    let total = List.length subheadings in
+    let results = [
+      ("cnt1", total - List.length subheadings_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 032s: sitewide aggregation of 032p results *)
+let test032s site pg_results =
+  let test_id = "nav032s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav032p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 033p: Return total number of subheading elements and counts for h2..h6 *)
+(*
+let test033p site page =
+  let test_id = "nav033p" in
     Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h2 = try Hashtbl.find tbl "H2" with _ -> [] in
@@ -657,13 +753,13 @@ let test032p site page =
 *)
 
 (* ---------------------------------------------------------------- *)
-(** 032s: sitewide aggregation for 032p results *)
+(** 033s: sitewide aggregation for 033p results *)
 (*
-let test032s site pg_results =
-  let test_id = "nav032s" in
+let test033s site pg_results =
+  let test_id = "nav033s" in
     Testutil.msg test_id;
     let (r2, r3, r4, r5, r6, total, pg_count) =
-      Wamtml.sum_6_results "r2" "r3" "r4" "r5" "r6" "tot1" "nav032p" pg_results
+      Wamtml.sum_6_results "r2" "r3" "r4" "r5" "r6" "tot1" "nav033p" pg_results
     in
     let results = [
       ("r2", r2);
@@ -681,9 +777,13 @@ let test032s site pg_results =
 (* FORM CONTROLS *)
 (* ---------------------------------------------------------------- *)
 
-(** 041p: How many form elements have labels associated with them?
-    Included elements: textareas, select boxes, and input fields of
-    type text, password, checkbox, radio and file. *)
+(** 041p: Test whether textarea, select, and input elements with type=
+    text|password|checkbox|radio|file are referenced by label elements
+    or have title attributes.
+    @return cnt1: number of elements that do not meet criteria
+    @return tot1: total number of form control elements
+    @return pct1: percentage of elements that do not meet criteria
+*)
 let test041p site page =
   let test_id = "nav041p" in
     Testutil.msg test_id;
@@ -694,7 +794,7 @@ let test041p site page =
       let all_inputs =
         try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
       let f a b =
-        if  (Html.has_attribute_with_value b "type" "text") ||
+        if (Html.has_attribute_with_value b "type" "text") ||
           (Html.has_attribute_with_value b "type" "password") ||
           (Html.has_attribute_with_value b "type" "checkbox") ||
           (Html.has_attribute_with_value b "type" "radio") ||
@@ -730,10 +830,10 @@ let test041p site page =
     in
     let (id_total, title_total) = List.fold_left g (0,0) controls in
     let total_controls = List.length controls in
-    let percent = Testutil.pct_of_ints (id_total + title_total) total_controls in
+    let offenders = total_controls - (id_total + title_total) in
+    let percent = Testutil.pct_of_ints offenders total_controls in
     let results = [
-      ("cnt1", id_total);
-      ("cnt2", title_total);
+      ("cnt1", offenders);
       ("tot1", total_controls);
       ("pct1", percent)
     ] in
@@ -744,14 +844,142 @@ let test041p site page =
 let test041s site pg_results =
   let test_id = "nav041s" in
     Testutil.msg test_id;
-    let (id_count, title_count, control_count, pg_count) =
-      Wamtml.sum_3_results "cnt1" "cnt2" "tot1" "nav041p" pg_results
+    let (offenders, control_count, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav041p" pg_results
     in
-    let percent = Testutil.pct_of_ints (id_count + title_count) control_count in
+    let percent = Testutil.pct_of_ints offenders control_count in
     let results = [
-      ("cnt1", id_count);
-      ("cnt2", title_count);
+      ("cnt1", offenders);
       ("tot1", control_count);
+      ("pct1", percent);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 042p: Test whether input elements with type=button|reset|submit
+    have a value or title attribute.
+    @return cnt1: number of elements that do not meet criteria
+    @return tot1: total number of form control elements
+    @return pct1: percentage of elements that do not meet criteria
+*)
+let test042p site page =
+  let test_id = "nav042p" in
+    Testutil.msg test_id;
+    let tag_tbl = Html.tag_tbl (Page.document page) in
+    let inputs =
+      let all_inputs =
+        try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
+      let f a b =
+        if (Html.has_attribute_with_value b "type" "button") ||
+          (Html.has_attribute_with_value b "type" "reset") ||
+          (Html.has_attribute_with_value b "type" "submit")
+        then a@[b]
+        else a
+      in
+        List.fold_left f [] all_inputs
+    in
+    let g a b =
+      let (value_count, title_count) = a in
+        (* Given an input tag with one of the specified types, we need to
+           check for one of two things... it must either have (a) a non-empty
+           'value' attribute... *)
+      let has_value_attrib = (Html.has_non_blank_attribute b "value") in
+        (* ...or (b) a non-empty 'title' attribute *)
+        if (not has_value_attrib)
+        then (
+          if (Html.has_non_blank_attribute b "title")
+          then (value_count, title_count + 1)
+          else a
+        )
+        else (value_count + 1, title_count)
+    in
+    let (value_total, title_total) = List.fold_left g (0,0) inputs in
+    let total_inputs = List.length inputs in
+    let offenders = total_inputs - (value_total + title_total) in
+    let percent = Testutil.pct_of_ints offenders total_inputs in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total_inputs);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 042s: sitewide aggregation of 042p results *)
+let test042s site pg_results =
+  let test_id = "nav042s" in
+    Testutil.msg test_id;
+    let (offenders, input_count, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav042p" pg_results
+    in
+    let percent = Testutil.pct_of_ints offenders input_count in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", input_count);
+      ("pct1", percent);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 043p: Test whether input elements with type=image have alt or title
+    attribute
+    @return cnt1: number of elements that do not meet criteria
+    @return tot1: total number of form control elements
+    @return pct1: percentage of elements that do not meet criteria
+*)
+let test043p site page =
+  let test_id = "nav043p" in
+    Testutil.msg test_id;
+    let tag_tbl = Html.tag_tbl (Page.document page) in
+    let inputs =
+      let all_inputs =
+        try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
+      let f a b =
+        if (Html.has_attribute_with_value b "type" "image")
+        then a@[b]
+        else a
+      in
+        List.fold_left f [] all_inputs
+    in
+    let g a b =
+      let (alt_count, title_count) = a in
+        (* Given an input type=image tag, we need to check for one of two things...
+           it must either have (a) a non-empty 'alt' attribute... *)
+      let has_alt_attrib = (Html.has_non_blank_attribute b "alt") in
+        (* ...or (b) a non-empty 'title' attribute *)
+        if (not has_alt_attrib)
+        then (
+          if (Html.has_non_blank_attribute b "title")
+          then (alt_count, title_count + 1)
+          else a
+        )
+        else (alt_count + 1, title_count)
+    in
+    let (alt_total, title_total) = List.fold_left g (0,0) inputs in
+    let total_inputs = List.length inputs in
+    let offenders = total_inputs - (alt_total + title_total) in
+    let percent = Testutil.pct_of_ints offenders total_inputs in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total_inputs);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 043s: sitewide aggregation of 043p results *)
+let test043s site pg_results =
+  let test_id = "nav043s" in
+    Testutil.msg test_id;
+    let (offenders, input_count, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav043p" pg_results
+    in
+    let percent = Testutil.pct_of_ints offenders input_count in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", input_count);
       ("pct1", percent);
       ("tot2", pg_count)
     ] in

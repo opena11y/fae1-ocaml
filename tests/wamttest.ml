@@ -1,8 +1,9 @@
 (**
    Lists that define which tests are currently run by the analysis engine
+   and a version string that identifies the current set of tests.
 *)
 
-let version = "1.0.0";;
+let version = "1.0.1";;
 
 let site_tests = [
   Navigation.test001s;
@@ -17,11 +18,15 @@ let site_tests = [
   Navigation.test021s;
   Navigation.test022s;
   Navigation.test023s;
+  Navigation.test024s;
 
   Navigation.test030s;
   Navigation.test031s;
+  Navigation.test032s;
 
   Navigation.test041s;
+  Navigation.test042s;
+  Navigation.test043s;
 
   Text.test001s;
   Text.test002s;
@@ -46,7 +51,7 @@ let site_tests = [
 ];;
 
 let page_tests = [
-  Navigation.test001p; (* nav menus & h1s *)
+  Navigation.test001p; (* nav menus *)
   Navigation.test002p; (* area elements *)
   Navigation.test003p; (* data tables: no site test *)
   Navigation.test004p; (* frame titles *)
@@ -58,11 +63,15 @@ let page_tests = [
   Navigation.test021p;
   Navigation.test022p;
   Navigation.test023p;
+  Navigation.test024p;
 
   Navigation.test030p;
   Navigation.test031p;
+  Navigation.test032p;
 
   Navigation.test041p;
+  Navigation.test042p;
+  Navigation.test043p;
 
   Text.test001p;
   Text.test002p;
