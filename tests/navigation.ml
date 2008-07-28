@@ -439,19 +439,20 @@ let test020s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 021p: Test that page has at least one h1 element.
-    @return b1: true if criterion met, false otherwise
-    @return cnt1: number of h1 elements
+(** 021p: Find the number of empty h1 elements, excluding img alt text.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
 *)
 let test021p site page =
   let test_id = "nav021p" in
     Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
-    let count = List.length h1s in
+    let h1s_with_content = List.filter Testutil.has_content h1s in
+    let total = List.length h1s in
     let results = [
-      ("b1", Testutil.int_of_bool (count >= 1));
-      ("cnt1", count)
+      ("cnt1", total - List.length h1s_with_content);
+      ("tot1", total)
     ] in
       Wamtml.create_wamt_test test_id results;;
 
@@ -460,19 +461,19 @@ let test021p site page =
 let test021s site pg_results =
   let test_id = "nav021s" in
     Testutil.msg test_id;
-    let (count, pg_count) =
-      Wamtml.sum_result "b1" "nav021p" pg_results
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav021p" pg_results
     in
     let results = [
       ("cnt1", count);
-      ("tot1", pg_count);
-      ("pct1", Testutil.pct_of_ints count pg_count)
+      ("tot1", total);
+      ("tot2", pg_count)
     ] in
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 022p: Test that page has no more than two h1 elements.
-    @return b1: true if criterion met
+(** 022p: Test that page has at least one h1 element.
+    @return b1: true if criterion met, false otherwise
     @return cnt1: number of h1 elements
 *)
 let test022p site page =
@@ -482,7 +483,7 @@ let test022p site page =
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
     let count = List.length h1s in
     let results = [
-      ("b1", Testutil.int_of_bool (count <= 2));
+      ("b1", Testutil.int_of_bool (count >= 1));
       ("cnt1", count)
     ] in
       Wamtml.create_wamt_test test_id results;;
@@ -503,15 +504,47 @@ let test022s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 023p: Test that the text content of each h1 matches all or part of
+(** 023p: Test that page has no more than two h1 elements.
+    @return b1: true if criterion met
+    @return cnt1: number of h1 elements
+*)
+let test023p site page =
+  let test_id = "nav023p" in
+    Testutil.msg test_id;
+    let tbl = Html.tag_tbl (Page.document page) in
+    let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
+    let count = List.length h1s in
+    let results = [
+      ("b1", Testutil.int_of_bool (count <= 2));
+      ("cnt1", count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 023s: sitewide aggregation of 023p results *)
+let test023s site pg_results =
+  let test_id = "nav023s" in
+    Testutil.msg test_id;
+    let (count, pg_count) =
+      Wamtml.sum_result "b1" "nav023p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", pg_count);
+      ("pct1", Testutil.pct_of_ints count pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 024p: Test that the text content of each h1 matches all or part of
     the title content.
     @return cnt1: count of h1s that do not match
     @return tot1: total h1 elements on page
     @return pct1: percentage of h1s on page that do not match
     @return tot2: total title elements on page
 *)
-let test023p site page =
-  let test_id = "nav023p" in
+let test024p site page =
+  let test_id = "nav024p" in
     Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let titles = try Hashtbl.find tag_tbl "TITLE" with _ -> [] in
@@ -541,49 +574,16 @@ let test023p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 023s: sitewide aggregation of 023p results *)
-let test023s site pg_results =
-  let test_id = "nav023s" in
+(** 024s: sitewide aggregation of 024p results *)
+let test024s site pg_results =
+  let test_id = "nav024s" in
     Testutil.msg test_id;
-    let (count, total, pg_count) = Wamtml.sum_results "cnt1" "tot1" "nav023p" pg_results in
+    let (count, total, pg_count) = Wamtml.sum_results "cnt1" "tot1" "nav024p" pg_results in
     let percent = Testutil.pct_of_ints count total in
     let results = [
       ("cnt1", count);
       ("tot1", total);
       ("pct1", percent);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 024p: Find the number of empty h1 elements, excluding img alt text.
-    @return cnt1: number of empty elements
-    @return tot1: total number of elements
-*)
-let test024p site page =
-  let test_id = "nav024p" in
-    Testutil.msg test_id;
-    let tbl = Html.tag_tbl (Page.document page) in
-    let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
-    let h1s_with_content = List.filter Testutil.has_content h1s in
-    let total = List.length h1s in
-    let results = [
-      ("cnt1", total - List.length h1s_with_content);
-      ("tot1", total)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 024s: sitewide aggregation of 024p results *)
-let test024s site pg_results =
-  let test_id = "nav024s" in
-    Testutil.msg test_id;
-    let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav024p" pg_results
-    in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
       ("tot2", pg_count)
     ] in
       Wamtml.create_wamt_test test_id results;;
@@ -625,15 +625,48 @@ let test030s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 031p: Of the heading elements that follow the last h1 element,
+(** 031p: Find the number of empty subheading elements (h2..h6),
+    excluding img alt text.
+    @return cnt1: number of empty elements
+    @return tot1: total number of elements
+*)
+let test031p site page =
+  let test_id = "nav031p" in
+    Testutil.msg test_id;
+    let subheadings = get_subheading_elements page in
+    let subheadings_with_content = List.filter Testutil.has_content subheadings in
+    let total = List.length subheadings in
+    let results = [
+      ("cnt1", total - List.length subheadings_with_content);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 031s: sitewide aggregation of 031p results *)
+let test031s site pg_results =
+  let test_id = "nav031s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav031p" pg_results
+    in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 032p: Of the heading elements that follow the last h1 element,
     find how many are improperly nested.
     @return cnt1: number of offenders
     @return tot1: total number of heading elements that follow the last h1
     @return cnt2: number of h1 elements
     @return tot2: total number of heading elements
 *)
-let test031p site page =
-  let test_id = "nav031p" in
+let test032p site page =
+  let test_id = "nav032p" in
     Testutil.msg test_id;
 
     (* get all of the header elements in document order *)
@@ -678,41 +711,6 @@ let test031p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 031s: sitewide aggregation of 031p results *)
-let test031s site pg_results =
-  let test_id = "nav031s" in
-    Testutil.msg test_id;
-    let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav031p" pg_results
-    in
-    let percent = Testutil.pct_of_ints count total in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 032p: Find the number of empty subheading elements (h2..h6),
-    excluding img alt text.
-    @return cnt1: number of empty elements
-    @return tot1: total number of elements
-*)
-let test032p site page =
-  let test_id = "nav032p" in
-    Testutil.msg test_id;
-    let subheadings = get_subheading_elements page in
-    let subheadings_with_content = List.filter Testutil.has_content subheadings in
-    let total = List.length subheadings in
-    let results = [
-      ("cnt1", total - List.length subheadings_with_content);
-      ("tot1", total)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
 (** 032s: sitewide aggregation of 032p results *)
 let test032s site pg_results =
   let test_id = "nav032s" in
@@ -720,9 +718,11 @@ let test032s site pg_results =
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav032p" pg_results
     in
+    let percent = Testutil.pct_of_ints count total in
     let results = [
       ("cnt1", count);
       ("tot1", total);
+      ("pct1", percent);
       ("tot2", pg_count)
     ] in
       Wamtml.create_wamt_test test_id results;;
