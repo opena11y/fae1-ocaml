@@ -111,31 +111,40 @@ and is_nav_menu tag =
     );;
 
 (**
-   Count navigation menus that are immediately preceded by a header element.
+   Count navigation menus that are immediately preceded by a header element and that
+   precede the last h1 element on the page.
    @param status   1 if header element just seen at head of list, 0 otherwise
    @param cnt_m    number of navigation menus that are preceded by header element
    @param tot_m    number of ol/ul elements that appear to be navigation menus
    @param tot_l    total number of ol/ul elements found
+   @param cnt_h1s  number of h1 elements not yet seen
    @param lst      doc_model list
 *)
-let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l lst =
-  match lst with
-      (Html.Tag t) :: tl ->
-        if is_list_elem t
-        then (
-          if is_nav_menu t
-          then (
-            nav_menus_with_hdr_title 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) tl
+let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s lst =
+  if cnt_h1s = 0
+  then (cnt_m, tot_m, tot_l)
+  else (
+    match lst with
+        (Html.Tag t) :: tl ->
+          if (Html.tag_name t) = "H1"
+          then nav_menus_with_hdr_title 1 cnt_m tot_m tot_l (cnt_h1s - 1) tl
+          else (
+            if is_list_elem t
+            then (
+              if is_nav_menu t
+              then nav_menus_with_hdr_title 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
+              else nav_menus_with_hdr_title 0 cnt_m tot_m (tot_l + 1) cnt_h1s ((Html.tag_children t) @ tl)
+            )
+            else (
+              if is_hdr_elem t
+              then nav_menus_with_hdr_title 1 cnt_m tot_m tot_l cnt_h1s tl
+              else nav_menus_with_hdr_title 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+            )
           )
-          else nav_menus_with_hdr_title 0 cnt_m tot_m (tot_l + 1) ((Html.tag_children t) @ tl)
-        )
-        else
-          if is_hdr_elem t
-          then nav_menus_with_hdr_title 1 cnt_m tot_m tot_l tl
-          else nav_menus_with_hdr_title 0 cnt_m tot_m tot_l ((Html.tag_children t) @ tl)
-    | hd :: tl ->
-        nav_menus_with_hdr_title status cnt_m tot_m tot_l tl
-    | [] -> (cnt_m, tot_m, tot_l);;
+      | hd :: tl ->
+          nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s tl
+      | [] -> (cnt_m, tot_m, tot_l)
+  );;
 
 (* ANALYSIS FUNCTIONS *)
 
@@ -143,17 +152,20 @@ let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l lst =
 (** 001p: Return the number of navigation menus (ul and ol elements for
     which all or all but one of their li children contain only a link
     element OR a link element plus a nested navigation menu) that are
-    immediately preceded by a header element. *)
+    not immediately preceded by a header element. *)
 let test001p site page =
   let test_id = "nav001p" in
     Testutil.msg test_id;
     let doc_model = Html.doc_model (Page.document page) in
+    let h1s = Testutil.get_elements_with_name "H1" page in
+    let cnt_h1s = List.length h1s in
     let (count, total_menus, total_ol_ul) =
-      nav_menus_with_hdr_title 0 0 0 0 doc_model
+      nav_menus_with_hdr_title 0 0 0 0 cnt_h1s doc_model
     in
-    let percent = Testutil.pct_of_ints count total_menus in
+    let offenders = total_menus - count in
+    let percent = Testutil.pct_of_ints offenders total_menus in
     let results = [
-      ("cnt1", count);
+      ("cnt1", offenders);
       ("tot1", total_menus);
       ("pct1", percent)
     ] in
