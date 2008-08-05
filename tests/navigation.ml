@@ -35,9 +35,9 @@ let get_subheading_elements page =
     (h2@h3@h4@h5@h6);;
 
 (**
-   Determine whether tag is a header element.
+   Determine whether tag is a heading element.
 *)
-let is_hdr_elem tag =
+let is_heading_elem tag =
   let name = Html.tag_name tag in
     (name = "H1" || name = "H2" || name = "H3" ||
         name = "H4" || name = "H5" || name = "H6");;
@@ -111,10 +111,10 @@ and is_nav_menu tag =
     );;
 
 (**
-   Count navigation menus that are immediately preceded by a header element and that
-   precede the last h1 element on the page.
-   @param status   1 if header element just seen at head of list, 0 otherwise
-   @param cnt_m    number of navigation menus that are preceded by header element
+   Count navigation menus that precede the last h1 element on the page and that
+   are immediately preceded by a heading element.
+   @param status   1 if heading element just seen at head of list, 0 otherwise
+   @param cnt_m    number of navigation menus that are preceded by heading element
    @param tot_m    number of ol/ul elements that appear to be navigation menus
    @param tot_l    total number of ol/ul elements found
    @param cnt_h1s  number of h1 elements not yet seen
@@ -127,21 +127,32 @@ let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s lst =
     match lst with
         (Html.Tag t) :: tl ->
           if (Html.tag_name t) = "H1"
-          then nav_menus_with_hdr_title 1 cnt_m tot_m tot_l (cnt_h1s - 1) tl
+          then
+            (* heading element just seen: set status flag *)
+            nav_menus_with_hdr_title 1 cnt_m tot_m tot_l (cnt_h1s - 1) tl
           else (
             if is_list_elem t
             then (
               if is_nav_menu t
-              then nav_menus_with_hdr_title 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
-              else nav_menus_with_hdr_title 0 cnt_m tot_m (tot_l + 1) cnt_h1s ((Html.tag_children t) @ tl)
+              then
+                (* increment counters appropriately *)
+                nav_menus_with_hdr_title 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
+              else
+                (* increment total list elements only *)
+                nav_menus_with_hdr_title 0 cnt_m tot_m (tot_l + 1) cnt_h1s ((Html.tag_children t) @ tl)
             )
             else (
-              if is_hdr_elem t
-              then nav_menus_with_hdr_title 1 cnt_m tot_m tot_l cnt_h1s tl
-              else nav_menus_with_hdr_title 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+              if is_heading_elem t
+              then
+                (* set status flag *)
+                nav_menus_with_hdr_title 1 cnt_m tot_m tot_l cnt_h1s tl
+              else
+                (* unset status flag *)
+                nav_menus_with_hdr_title 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
             )
           )
       | hd :: tl ->
+          (* we're only interested in objects of type Html.Tag *)
           nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s tl
       | [] -> (cnt_m, tot_m, tot_l)
   );;
@@ -152,7 +163,7 @@ let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s lst =
 (** 001p: Return the number of navigation menus (ul and ol elements for
     which all or all but one of their li children contain only a link
     element OR a link element plus a nested navigation menu) that are
-    not immediately preceded by a header element. *)
+    not immediately preceded by a heading element. *)
 let test001p site page =
   let test_id = "nav001p" in
     Testutil.msg test_id;
@@ -190,9 +201,9 @@ let test001s site pg_results =
 
 (* ---------------------------------------------------------------- *)
 (** 002p: Check that all area tags have redundant text links.
-    @return cnt1: number of area tags with redundant text links
+    @return cnt1: number of area tags that do not have redundant text links
     @return tot1: total number of area tags
-    @return pct1: percent of area tags that meet criteria
+    @return pct1: percent of area tags that do not meet criteria
 *)
 let test002p site page =
   let test_id = "nav002p" in
@@ -215,9 +226,10 @@ let test002p site page =
     in
     let area_tag_red_count = List.fold_left f 0 area_tags in
     let total_area_tags = List.length area_tags in
-    let percent = Testutil.pct_of_ints area_tag_red_count total_area_tags in
+    let offenders = total_area_tags - area_tag_red_count in
+    let percent = Testutil.pct_of_ints offenders total_area_tags in
     let results = [
-      ("cnt1", area_tag_red_count);
+      ("cnt1", offenders);
       ("tot1", total_area_tags);
       ("pct1", percent)
     ] in
@@ -681,15 +693,15 @@ let test032p site page =
   let test_id = "nav032p" in
     Testutil.msg test_id;
 
-    (* get all of the header elements in document order *)
+    (* get all of the heading elements in document order *)
     let names = ["H1"; "H2"; "H3"; "H4"; "H5"; "H6"] in
-    let headers = Testutil.get_elements_with_names names page in
+    let headings = Testutil.get_elements_with_names names page in
 
     (* count H1 elements *)
-    let h1_count = Testutil.count_elements_with_name "H1" headers in
+    let h1_count = Testutil.count_elements_with_name "H1" headings in
 
     (* get list of elements that follow the last H1 *)
-    let successors = Testutil.get_successor_elements_last_occurrence "H1" headers in
+    let successors = Testutil.get_successor_elements_last_occurrence "H1" headings in
 
     (* convert successors list to a simple list of strings *)
     let tagnames = List.map (fun t -> Html.tag_name t) successors in
@@ -711,14 +723,14 @@ let test032p site page =
         | [] -> []
     in
 
-    (* analyze subheader tags by passing in H1 as first element *)
+    (* analyze subheading tags by passing in H1 as first element *)
     let offenders = get_offenders "H1" tagnames in
 
     let results = [
       ("cnt1", List.length offenders);
       ("tot1", List.length successors);
       ("cnt2", h1_count);
-      ("tot2", List.length headers)
+      ("tot2", List.length headings)
     ] in
       Wamtml.create_wamt_test test_id results;;
 
