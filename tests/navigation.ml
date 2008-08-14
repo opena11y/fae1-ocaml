@@ -160,99 +160,6 @@ let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s lst =
 (* ANALYSIS FUNCTIONS *)
 
 (* ---------------------------------------------------------------- *)
-(** 001p: Return the number of navigation menus (ul and ol elements for
-    which all or all but one of their li children contain only a link
-    element OR a link element plus a nested navigation menu) that are
-    not immediately preceded by a heading element. *)
-let test001p site page =
-  let test_id = "nav001p" in
-    Testutil.msg test_id;
-    let doc_model = Html.doc_model (Page.document page) in
-    let h1s = Testutil.get_elements_with_name "H1" page in
-    let cnt_h1s = List.length h1s in
-    let (count, total_menus, total_ol_ul) =
-      nav_menus_with_hdr_title 0 0 0 0 cnt_h1s doc_model
-    in
-    let offenders = total_menus - count in
-    let percent = Testutil.pct_of_ints offenders total_menus in
-    let results = [
-      ("cnt1", offenders);
-      ("tot1", total_menus);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 001s: sitewide aggregation of 001p results *)
-let test001s site pg_results =
-  let test_id = "nav001s" in
-    Testutil.msg test_id;
-    let (sum_c, sum_t, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav001p" pg_results
-    in
-    let site_pct = Testutil.pct_of_ints sum_c sum_t in
-    let results = [
-      ("cnt1", sum_c);
-      ("tot1", sum_t);
-      ("pct1", site_pct);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 002p: Check that all area tags have redundant text links.
-    @return cnt1: number of area tags that do not have redundant text links
-    @return tot1: total number of area tags
-    @return pct1: percent of area tags that do not meet criteria
-*)
-let test002p site page =
-  let test_id = "nav002p" in
-    Testutil.msg test_id;
-    let tag_tbl = (Html.tag_tbl (Page.document page)) in
-    let area_tags = try Hashtbl.find tag_tbl "AREA" with _ -> [] in
-    let a_tags = try Hashtbl.find tag_tbl "A" with _ -> [] in
-    let check_a_list s a b =
-      if (Html.has_attribute_with_value b "href" s)
-      then true
-      else a
-    in
-    let f a b =
-      try
-        let href = Html.get_attribute b "href" in
-          if (List.fold_left (check_a_list (Html.attr_value href)) false a_tags)
-          then (a + 1)
-          else (a)
-      with _ -> a
-    in
-    let area_tag_red_count = List.fold_left f 0 area_tags in
-    let total_area_tags = List.length area_tags in
-    let offenders = total_area_tags - area_tag_red_count in
-    let percent = Testutil.pct_of_ints offenders total_area_tags in
-    let results = [
-      ("cnt1", offenders);
-      ("tot1", total_area_tags);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 002s: sitewide aggregation of 002p results *)
-let test002s site pg_results =
-  let test_id = "nav002s" in
-    Testutil.msg test_id;
-    let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav002p" pg_results
-    in
-    let percent = Testutil.pct_of_ints count total in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
 (** 003p: This test determines which tables on a page are data tables.
     It also stores some additional information about those tables so
     we don't have to process things multiple times. This test MUST be
@@ -798,18 +705,158 @@ let test033s site pg_results =
 *)
 
 (* ---------------------------------------------------------------- *)
+(* NAVIGATION BARS *)
+(* ---------------------------------------------------------------- *)
+
+(** 041p: Return the number of navigation menus (ul and ol elements for
+    which all or all but one of their li children contain only a link
+    element OR a link element plus a nested navigation menu) that are
+    not immediately preceded by a heading element. *)
+let test041p site page =
+  let test_id = "nav041p" in
+    Testutil.msg test_id;
+    let doc_model = Html.doc_model (Page.document page) in
+    let h1s = Testutil.get_elements_with_name "H1" page in
+    let cnt_h1s = List.length h1s in
+    let (count, total_menus, total_ol_ul) =
+      nav_menus_with_hdr_title 0 0 0 0 cnt_h1s doc_model
+    in
+    let offenders = total_menus - count in
+    let percent = Testutil.pct_of_ints offenders total_menus in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total_menus);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 041s: sitewide aggregation of 041p results *)
+let test041s site pg_results =
+  let test_id = "nav041s" in
+    Testutil.msg test_id;
+    let (sum_c, sum_t, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav041p" pg_results
+    in
+    let site_pct = Testutil.pct_of_ints sum_c sum_t in
+    let results = [
+      ("cnt1", sum_c);
+      ("tot1", sum_t);
+      ("pct1", site_pct);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 044p: Check that all area tags have redundant text links.
+    @return cnt1: number of area tags that do not have redundant text links
+    @return tot1: total number of area tags
+    @return pct1: percent of area tags that do not meet criteria
+*)
+let test044p site page =
+  let test_id = "nav044p" in
+    Testutil.msg test_id;
+    let tag_tbl = (Html.tag_tbl (Page.document page)) in
+    let area_tags = try Hashtbl.find tag_tbl "AREA" with _ -> [] in
+    let a_tags = try Hashtbl.find tag_tbl "A" with _ -> [] in
+    let check_a_list s a b =
+      if (Html.has_attribute_with_value b "href" s)
+      then true
+      else a
+    in
+    let f a b =
+      try
+        let href = Html.get_attribute b "href" in
+          if (List.fold_left (check_a_list (Html.attr_value href)) false a_tags)
+          then (a + 1)
+          else (a)
+      with _ -> a
+    in
+    let area_tag_red_count = List.fold_left f 0 area_tags in
+    let total_area_tags = List.length area_tags in
+    let offenders = total_area_tags - area_tag_red_count in
+    let percent = Testutil.pct_of_ints offenders total_area_tags in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total_area_tags);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 044s: sitewide aggregation of 044p results *)
+let test044s site pg_results =
+  let test_id = "nav044s" in
+    Testutil.msg test_id;
+    let (count, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav044p" pg_results
+    in
+    let percent = Testutil.pct_of_ints count total in
+    let results = [
+      ("cnt1", count);
+      ("tot1", total);
+      ("pct1", percent);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (* FORM CONTROLS *)
 (* ---------------------------------------------------------------- *)
 
-(** 041p: Test whether textarea, select, and input elements with type=
+(** 050p: Find the number of empty label and legend elements.
+    @return cnt1: number of empty label elements
+    @return tot1: total number of label elements
+    @return cnt2: number of empty legend elements
+    @return tot2: total number of legend elements
+*)
+let test050p site page =
+  let test_id = "nav050p" in
+    Testutil.msg test_id;
+    let tag_tbl = Html.tag_tbl (Page.document page) in
+    (* label elements *)
+    let labels = try Hashtbl.find tag_tbl "LABEL" with _ -> [] in
+    let labels_with_content = List.filter Testutil.has_content labels in
+    let total_labels = List.length labels in
+    (* legend elements *)
+    let legends = try Hashtbl.find tag_tbl "LEGEND" with _ -> [] in
+    let legends_with_content = List.filter Testutil.has_content legends in
+    let total_legends = List.length legends in
+    let results = [
+      ("cnt1", total_labels - List.length labels_with_content);
+      ("tot1", total_labels);
+      ("cnt2", total_legends - List.length legends_with_content);
+      ("tot2", total_legends);
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 050s: sitewide aggregation of 050p results *)
+let test050s site pg_results =
+  let test_id = "nav050s" in
+    Testutil.msg test_id;
+    let (count_labels, total_labels, count_legends, total_legends, pg_count) =
+      Wamtml.sum_4_results "cnt1" "tot1" "cnt2" "tot2" "nav050p" pg_results
+    in
+    let results = [
+      ("cnt1", count_labels);
+      ("tot1", total_labels);
+      ("cnt2", count_legends);
+      ("tot2", total_legends);
+      ("tot3", pg_count);
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 051p: Test whether textarea, select, and input elements with type=
     text|password|checkbox|radio|file are referenced by label elements
     or have title attributes.
     @return cnt1: number of elements that do not meet criteria
     @return tot1: total number of form control elements
     @return pct1: percentage of elements that do not meet criteria
 *)
-let test041p site page =
-  let test_id = "nav041p" in
+let test051p site page =
+  let test_id = "nav051p" in
     Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let textareas = try Hashtbl.find tag_tbl "TEXTAREA" with _ -> [] in
@@ -864,12 +911,12 @@ let test041p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 041s: sitewide aggregation of 041p results *)
-let test041s site pg_results =
-  let test_id = "nav041s" in
+(** 051s: sitewide aggregation of 051p results *)
+let test051s site pg_results =
+  let test_id = "nav051s" in
     Testutil.msg test_id;
     let (offenders, control_count, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav041p" pg_results
+      Wamtml.sum_results "cnt1" "tot1" "nav051p" pg_results
     in
     let percent = Testutil.pct_of_ints offenders control_count in
     let results = [
@@ -881,14 +928,14 @@ let test041s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 042p: Test whether input elements with type=button|reset|submit
+(** 052p: Test whether input elements with type=button|reset|submit
     have a value or title attribute.
     @return cnt1: number of elements that do not meet criteria
     @return tot1: total number of form control elements
     @return pct1: percentage of elements that do not meet criteria
 *)
-let test042p site page =
-  let test_id = "nav042p" in
+let test052p site page =
+  let test_id = "nav052p" in
     Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let inputs =
@@ -930,12 +977,12 @@ let test042p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 042s: sitewide aggregation of 042p results *)
-let test042s site pg_results =
-  let test_id = "nav042s" in
+(** 052s: sitewide aggregation of 052p results *)
+let test052s site pg_results =
+  let test_id = "nav052s" in
     Testutil.msg test_id;
     let (offenders, input_count, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav042p" pg_results
+      Wamtml.sum_results "cnt1" "tot1" "nav052p" pg_results
     in
     let percent = Testutil.pct_of_ints offenders input_count in
     let results = [
@@ -947,14 +994,14 @@ let test042s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 043p: Test whether input elements with type=image have alt or title
+(** 053p: Test whether input elements with type=image have alt or title
     attribute
     @return cnt1: number of elements that do not meet criteria
     @return tot1: total number of form control elements
     @return pct1: percentage of elements that do not meet criteria
 *)
-let test043p site page =
-  let test_id = "nav043p" in
+let test053p site page =
+  let test_id = "nav053p" in
     Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let inputs =
@@ -993,12 +1040,12 @@ let test043p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 043s: sitewide aggregation of 043p results *)
-let test043s site pg_results =
-  let test_id = "nav043s" in
+(** 053s: sitewide aggregation of 053p results *)
+let test053s site pg_results =
+  let test_id = "nav053s" in
     Testutil.msg test_id;
     let (offenders, input_count, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav043p" pg_results
+      Wamtml.sum_results "cnt1" "tot1" "nav053p" pg_results
     in
     let percent = Testutil.pct_of_ints offenders input_count in
     let results = [

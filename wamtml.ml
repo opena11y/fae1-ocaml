@@ -233,6 +233,18 @@ let sum_3_results k1 k2 k3 test_id pg_results =
   in
     List.fold_left f (0, 0, 0, 0) results_list;;
 
+let sum_4_results k1 k2 k3 k4 test_id pg_results =
+  let results_list = get_test_results_all_pages test_id pg_results in
+  let f a b =
+    let (sum_v1, sum_v2, sum_v3, sum_v4, pg_count) = a in
+    let v1 = get_result_value k1 b in
+    let v2 = get_result_value k2 b in
+    let v3 = get_result_value k3 b in
+    let v4 = get_result_value k4 b in
+      (sum_v1 + v1, sum_v2 + v2, sum_v3 + v3, sum_v4 + v4, pg_count + 1)
+  in
+    List.fold_left f (0, 0, 0, 0, 0) results_list;;
+
 let sum_6_results k1 k2 k3 k4 k5 k6 test_id pg_results =
   let results_list = get_test_results_all_pages test_id pg_results in
   let f a b =

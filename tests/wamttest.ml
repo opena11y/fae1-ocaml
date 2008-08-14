@@ -6,8 +6,6 @@
 let version = "1.0.1";;
 
 let site_tests = [
-  Navigation.test001s;
-  Navigation.test002s;
   Navigation.test004s;
 
   Navigation.test010s;
@@ -25,8 +23,12 @@ let site_tests = [
   Navigation.test032s;
 
   Navigation.test041s;
-  Navigation.test042s;
-  Navigation.test043s;
+  Navigation.test044s;
+
+  Navigation.test050s;
+  Navigation.test051s;
+  Navigation.test052s;
+  Navigation.test053s;
 
   Text.test001s;
   Text.test002s;
@@ -51,8 +53,6 @@ let site_tests = [
 ];;
 
 let page_tests = [
-  Navigation.test001p; (* nav menus *)
-  Navigation.test002p; (* area elements *)
   Navigation.test003p; (* data tables: no site test *)
   Navigation.test004p; (* frame titles *)
 
@@ -70,8 +70,12 @@ let page_tests = [
   Navigation.test032p;
 
   Navigation.test041p;
-  Navigation.test042p;
-  Navigation.test043p;
+  Navigation.test044p;
+
+  Navigation.test050p;
+  Navigation.test051p;
+  Navigation.test052p;
+  Navigation.test053p;
 
   Text.test001p;
   Text.test002p;
