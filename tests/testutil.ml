@@ -5,22 +5,6 @@
 let debug = false;;
 
 (**
-   Trim leading and trailing whitespace from string s;
-   borrowed from PLEAC-Objective CAML.
-*)
-let trim s =
-  let s' = Str.replace_first (Str.regexp "^[ \t\n]+") "" s in
-    Str.replace_first (Str.regexp "[ \t\n]+$") "" s';;
-
-(**
-   Remove leading and trailing whitespace, and replace each
-   sequence of multiple whitespace characters within s with
-   a single space character.
-*)
-let normalize_space s =
-  Str.global_replace (Str.regexp "[ \t\n]+") " " (trim s);;
-
-(**
   Given a predicate to be applied to each Html.Tag in an htmlItem
   list, return the list of tags that satisfy the predicate.
 
@@ -215,7 +199,7 @@ let get_trimmed_content_weight tag =
           match hd with
               Html.Tag t -> f w ((Html.tag_children t) @ tl)
             | Html.Entity s -> f (w + 1) tl
-            | Html.Text s -> f (w + (String.length (trim s))) tl
+            | Html.Text s -> f (w + (String.length (Stringlib.trim s))) tl
             | _ -> f w tl
         )
       | [] -> w
@@ -234,7 +218,7 @@ let has_content tag =
 *)
 let has_content_with_img_alt tag =
   let content = Html.get_node_content_with_img_alt "" [Html.Tag tag] in
-    String.length (trim content) > 0;;
+    String.length (Stringlib.trim content) > 0;;
 
 (* FUNCTIONS WITH HASHTBL ARG *)
 
@@ -300,7 +284,7 @@ let replace_nonalphanumeric s =
    and trailing space characters removed.
 *)
 let normalize_alphanumeric s =
-  trim (replace_nonalphanumeric s);;
+  Stringlib.trim (replace_nonalphanumeric s);;
 
 (**
    Split the string s on one or more space characters

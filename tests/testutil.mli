@@ -1,10 +1,5 @@
 (* File: testutil.mli *)
 
-val trim :
-  string -> string;;
-val normalize_space :
-  string -> string;;
-
 val get_elements_with_names :
   string list -> Page.page -> Html.htmlItem Html.tag list;;
 val get_elements_with_attribute :

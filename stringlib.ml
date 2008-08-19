@@ -3,6 +3,22 @@
 *)
 
 (**
+   Trim leading and trailing whitespace from string s;
+   borrowed from PLEAC-Objective CAML.
+*)
+let trim s =
+  let s' = Str.replace_first (Str.regexp "^[ \t\n]+") "" s in
+    Str.replace_first (Str.regexp "[ \t\n]+$") "" s';;
+
+(**
+   Remove leading and trailing whitespace, and replace each
+   sequence of multiple whitespace characters within s with
+   a single space character.
+*)
+let normalize_space s =
+  Str.global_replace (Str.regexp "[ \t\n]+") " " (trim s);;
+
+(**
    Given a character c, return a string of length 1
    where the first character is c.
 *)

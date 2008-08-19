@@ -21,8 +21,6 @@ ocamlopt -c -w $FLAGS -I ./system -I ./html/parser -I ./html -I ./graphics html_
 
 ocamlopt -c -I ./html html.cmxa page.ml
 ocamlopt -c -I ./html -I ./graphics graphics.cmxa html.cmxa page.cmx site.ml
-ocamlopt -c -I ./html html.cmxa page.cmx testutil.mli
-ocamlopt -c -I ./html html.cmxa page.cmx testutil.ml
 
 cd ./tests
 ./compile_ntv $FLAGS
@@ -30,4 +28,4 @@ cd ..
 
 ocamlopt -c -I ./tests -I ./system -I ./html -I ./graphics html_parser.cmxa stra.cmxa graphics.cmxa page.cmx site.cmx filesys.cmx wamtfile.cmx wamtml.cmx wamttests.cmxa wamt.ml
 
-ocamlopt -o wamt -I ./graphics -I ./tests -I ./system -I ./html/ -I ./html/parser str.cmxa unix.cmxa graphics.cmxa html.cmxa html_parser.cmxa page.cmx site.cmx testutil.cmx stringlib.cmx filesys.cmx wamtfile.cmx wamtml.cmx wamttests.cmxa wamt.cmx
+ocamlopt -o wamt -I ./graphics -I ./tests -I ./system -I ./html/ -I ./html/parser str.cmxa unix.cmxa graphics.cmxa html.cmxa html_parser.cmxa page.cmx site.cmx stringlib.cmx filesys.cmx wamtfile.cmx wamtml.cmx wamttests.cmxa wamt.cmx

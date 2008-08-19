@@ -1,7 +1,11 @@
 #! /bin/bash
 FLAGS=$1
 
-ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navigation.ml
+ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.mli
+ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.ml
+ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.cmx navutil.ml
+
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx navigation.ml
 
 ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx text.ml
 
@@ -11,6 +15,6 @@ ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa strin
 
 ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx style.ml
 
-ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa unix.cmxa str.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.ml
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa unix.cmxa str.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.ml
 
-ocamlopt -a navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.cmx -o wamttests.cmxa
+ocamlopt -a testutil.cmx navutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.cmx -o wamttests.cmxa

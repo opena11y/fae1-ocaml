@@ -86,7 +86,7 @@ let run_page_report site page page_tests =
     if (Hashtbl.mem tbl "TITLE")
     then (
       let tag = Html.Tag(List.hd (Hashtbl.find tbl "TITLE")) in
-        Testutil.normalize_space (Html.get_node_content "" [tag])
+        Stringlib.normalize_space (Html.get_node_content "" [tag])
     )
     else ""
   in
