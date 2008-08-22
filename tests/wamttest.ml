@@ -3,7 +3,7 @@
    and a version string that identifies the current set of tests.
 *)
 
-let version = "1.0.1";;
+let version = "1.0.2";;
 
 let site_tests = [
   Navigation.test004s;
@@ -23,7 +23,8 @@ let site_tests = [
   Navigation.test032s;
 
   Navigation.test041s;
-  Navigation.test044s;
+  Navigation.test042s;
+  Navigation.test043s;
 
   Navigation.test050s;
   Navigation.test051s;
@@ -70,7 +71,8 @@ let page_tests = [
   Navigation.test032p;
 
   Navigation.test041p;
-  Navigation.test044p;
+  Navigation.test042p;
+  Navigation.test043p;
 
   Navigation.test050p;
   Navigation.test051p;

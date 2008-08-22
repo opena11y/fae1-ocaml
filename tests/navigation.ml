@@ -9,7 +9,8 @@ open Navutil
 (** 003p: This test determines which tables on a page are data tables.
     It also stores some additional information about those tables so
     we don't have to process things multiple times. This test MUST be
-    run before other tests with dependences on that additional info. *)
+    run before other tests with dependences on that additional info.
+*)
 let test003p site page =
   let test_id = "nav003p" in
     Testutil.msg test_id;
@@ -552,13 +553,14 @@ let test033s site pg_results =
 *)
 
 (* ---------------------------------------------------------------- *)
-(* NAVIGATION BARS *)
+(* NAVIGATION MENUS *)
 (* ---------------------------------------------------------------- *)
 
-(** 041p: Return the number of navigation menus (ul and ol elements for
-    which all or all but one of their li children contain only a link
-    element OR a link element plus a nested navigation menu) that are
-    not immediately preceded by a heading element. *)
+(** 041p: Return the number of list navigation menus (ul or ol
+    elements for which all or all but one of their li children contain
+    only a link element OR a link element plus a nested navigation
+    menu) that are not immediately preceded by a heading element.
+*)
 let test041p site page =
   let test_id = "nav041p" in
     Testutil.msg test_id;
@@ -566,7 +568,7 @@ let test041p site page =
     let h1s = Testutil.get_elements_with_name "H1" page in
     let cnt_h1s = List.length h1s in
     let (count, total_menus, total_ol_ul) =
-      nav_menus_with_hdr_title 0 0 0 0 cnt_h1s doc_model
+      nav_menus_with_hdr_title is_list_elem is_nav_list cnt_h1s doc_model
     in
     let offenders = total_menus - count in
     let percent = Testutil.pct_of_ints offenders total_menus in
@@ -595,13 +597,53 @@ let test041s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 044p: Check that all area tags have redundant text links.
+(** 042p: Return the number of map navigation menus (map elements
+    that contain at least one area element) that are not immediately
+    preceded by a heading element.
+*)
+let test042p site page =
+  let test_id = "nav042p" in
+    Testutil.msg test_id;
+    let doc_model = Html.doc_model (Page.document page) in
+    let h1s = Testutil.get_elements_with_name "H1" page in
+    let cnt_h1s = List.length h1s in
+    let (count, total_menus, total_maps) =
+      nav_menus_with_hdr_title is_map_elem is_nav_map cnt_h1s doc_model
+    in
+    let offenders = total_menus - count in
+    let percent = Testutil.pct_of_ints offenders total_menus in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total_menus);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 042s: sitewide aggregation of 042p results *)
+let test042s site pg_results =
+  let test_id = "nav042s" in
+    Testutil.msg test_id;
+    let (sum_c, sum_t, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav042p" pg_results
+    in
+    let site_pct = Testutil.pct_of_ints sum_c sum_t in
+    let results = [
+      ("cnt1", sum_c);
+      ("tot1", sum_t);
+      ("pct1", site_pct);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 043p: Check that all area tags have redundant text links.
     @return cnt1: number of area tags that do not have redundant text links
     @return tot1: total number of area tags
     @return pct1: percent of area tags that do not meet criteria
 *)
-let test044p site page =
-  let test_id = "nav044p" in
+let test043p site page =
+  let test_id = "nav043p" in
     Testutil.msg test_id;
     let tag_tbl = (Html.tag_tbl (Page.document page)) in
     let area_tags = try Hashtbl.find tag_tbl "AREA" with _ -> [] in
@@ -631,12 +673,12 @@ let test044p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 044s: sitewide aggregation of 044p results *)
-let test044s site pg_results =
-  let test_id = "nav044s" in
+(** 043s: sitewide aggregation of 043p results *)
+let test043s site pg_results =
+  let test_id = "nav043s" in
     Testutil.msg test_id;
     let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "nav044p" pg_results
+      Wamtml.sum_results "cnt1" "tot1" "nav043p" pg_results
     in
     let percent = Testutil.pct_of_ints count total in
     let results = [

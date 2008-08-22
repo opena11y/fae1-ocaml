@@ -24,6 +24,25 @@ let is_heading_elem tag =
     (name = "H1" || name = "H2" || name = "H3" ||
         name = "H4" || name = "H5" || name = "H6");;
 
+(* MAP ELEMENTS AS NAVIGATION BARS *)
+
+(**
+   Determine whether tag is a map element.
+*)
+let is_map_elem tag =
+  let name = Html.tag_name tag in
+    name = "MAP";;
+
+(**
+   Criterion for a map element to be considered a navigation
+   menu: It has to contain at least one area element.
+*)
+let is_nav_map tag =
+  let areas = Testutil.get_descendants tag ["AREA"] in
+    (List.length areas) > 0;;
+
+(* LIST ELEMENTS AS NAVIGATION BARS *)
+
 (**
    Determine whether tag is an ordered or unordered list element.
 *)
@@ -32,7 +51,7 @@ let is_list_elem tag =
     name = "OL" || name = "UL";;
 
 (**
-  The functions is_item_link and is_nav_menu are mutually
+  The functions is_item_link and is_nav_list are mutually
   recursive, i.e., each calls the other.
 
   is_item_link tests whether an element is an 'li', and if
@@ -42,7 +61,7 @@ let is_list_elem tag =
   weight equals that of its first link descendant plus that
   of the nested nav_menu.
 
-  is_nav_menu tests whether all or all but one of its 'li'
+  is_nav_list tests whether all or all but one of its 'li'
   child elements meet the is_item_link requirements.
 *)
 let rec is_item_link tag =
@@ -63,14 +82,20 @@ let rec is_item_link tag =
               then (
                 let nested_list = List.hd lists in
                 let list_weight = Testutil.get_trimmed_content_weight nested_list in
-                  (is_nav_menu nested_list) && (item_weight = link_weight + list_weight)
+                  (is_nav_list nested_list) && (item_weight = link_weight + list_weight)
               )
               else false
       )
-      else false
-  else false
-and is_nav_menu tag =
-  if debug then print_endline ">>> is_nav_menu";
+      else (
+        if debug then print_endline ">>> no links found";
+        false
+      )
+  else (
+    if debug then print_endline ">>> not an LI element";
+    false
+  )
+and is_nav_list tag =
+  if debug then print_endline ">>> is_nav_list";
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with
@@ -82,6 +107,7 @@ and is_nav_menu tag =
   in
   let items_with_links = count 0 list_items in
   let item_count = List.length list_items in
+    if debug then print_endline ("item_count: " ^ (string_of_int item_count) ^ " items_with_links: " ^ (string_of_int items_with_links));
     if (items_with_links > 0) && (item_count - items_with_links) <= 1
     then (
       if debug then print_endline ">>> PASSED!!!";
@@ -93,48 +119,64 @@ and is_nav_menu tag =
     );;
 
 (**
-   Count navigation menus that precede the last h1 element on the page and that
-   are immediately preceded by a heading element.
-   @param status   1 if heading element just seen at head of list, 0 otherwise
-   @param cnt_m    number of navigation menus that are preceded by heading element
-   @param tot_m    number of ol/ul elements that appear to be navigation menus
-   @param tot_l    total number of ol/ul elements found
-   @param cnt_h1s  number of h1 elements not yet seen
-   @param lst      doc_model list
+   Count navigation menus that precede the last h1 element on the page
+   and that are immediately preceded by a heading element.
+   @param pred1      predicate for general case: element type being examined
+   @param pred2      predicate for specific case: meets necessary criteria
+   @param h1s        number of h1 elements not yet seen
+   @param doc_model  doc_model list
 *)
-let rec nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s lst =
-  if cnt_h1s = 0
-  then (cnt_m, tot_m, tot_l)
-  else (
-    match lst with
-        (Html.Tag t) :: tl ->
-          if (Html.tag_name t) = "H1"
-          then
-            (* heading element just seen: set status flag *)
-            nav_menus_with_hdr_title 1 cnt_m tot_m tot_l (cnt_h1s - 1) tl
-          else (
-            if is_list_elem t
-            then (
-              if is_nav_menu t
-              then
-                (* increment counters appropriately *)
-                nav_menus_with_hdr_title 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
-              else
-                (* increment total list elements only *)
-                nav_menus_with_hdr_title 0 cnt_m tot_m (tot_l + 1) cnt_h1s ((Html.tag_children t) @ tl)
-            )
+let nav_menus_with_hdr_title pred1 pred2 h1s doc_model =
+  (**
+     @param status   1 if heading element just seen at head of list, 0 otherwise
+     @param cnt_m    number of navigation menus that are preceded by heading element
+     @param tot_m    total number of elements that qualify as navigation menus
+     @param tot_l    total number of elements examined
+     @param cnt_h1s  number of h1 elements not yet seen
+     @param lst      doc_model list
+  *)
+  let rec f status cnt_m tot_m tot_l cnt_h1s lst =
+    if cnt_h1s = 0
+    then (cnt_m, tot_m, tot_l)
+    else (
+      match lst with
+          (Html.Tag t) :: tl ->
+            if debug then print_endline ("nmwht: " ^ (Html.tag_name t));
+            if (Html.tag_name t) = "H1"
+            then
+              (* heading element just seen: set status flag *)
+              f 1 cnt_m tot_m tot_l (cnt_h1s - 1) ((Html.tag_children t) @ tl)
             else (
-              if is_heading_elem t
-              then
-                (* set status flag *)
-                nav_menus_with_hdr_title 1 cnt_m tot_m tot_l cnt_h1s tl
-              else
-                (* unset status flag *)
-                nav_menus_with_hdr_title 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+              if pred1 t (* general case: element type to be examined *)
+              then (
+                if pred2 t (* specific case: meets all criteria *)
+                then (
+                  if debug then print_endline ("+++ true: " ^ (string_of_int (cnt_m + status)));
+                  if debug then print_endline ("+++ total: " ^ (string_of_int (tot_m + 1)));
+                  (* increment counters appropriately *)
+                  f 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
+                )
+                else (
+                  if debug then print_endline ("+++ false: " ^ (string_of_int cnt_m));
+                  if debug then print_endline ("+++ total: " ^ (string_of_int tot_m));
+                  (* increment total list elements only *)
+                  f 0 cnt_m tot_m (tot_l + 1) cnt_h1s tl
+                )
+              )
+              else (
+                if is_heading_elem t
+                then
+                  (* set status flag *)
+                  f 1 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+                else
+                  (* unset status flag *)
+                  f 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+              )
             )
-          )
-      | hd :: tl ->
-          (* we're only interested in objects of type Html.Tag *)
-          nav_menus_with_hdr_title status cnt_m tot_m tot_l cnt_h1s tl
-      | [] -> (cnt_m, tot_m, tot_l)
-  );;
+        | hd :: tl ->
+            (* we're only interested in objects of type Html.Tag *)
+            f status cnt_m tot_m tot_l cnt_h1s tl
+        | [] -> (cnt_m, tot_m, tot_l)
+    )
+  in
+    f 0 0 0 0 h1s doc_model;;
