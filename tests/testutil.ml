@@ -220,6 +220,21 @@ let has_content_with_img_alt tag =
   let content = Html.get_node_content_with_img_alt "" [Html.Tag tag] in
     String.length (Stringlib.trim content) > 0;;
 
+(**
+  Given a tag and a list of names, test whether all text content of tag is
+  contained within first descendant found with one of the specified names.
+*)
+let all_text_content_in_descendant tag names =
+  let descendants = get_descendants tag names in
+    if List.length descendants > 0
+    then (
+      let first_descendant = List.hd descendants in
+      let inner_weight = get_trimmed_content_weight first_descendant in
+      let outer_weight = get_trimmed_content_weight tag in
+        inner_weight = outer_weight
+    )
+    else false;;
+
 (* FUNCTIONS WITH HASHTBL ARG *)
 
 (**

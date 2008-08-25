@@ -2,8 +2,12 @@
    Utility functions for navigation and orientation tests
 *)
 
-let debug = false;;
+let debug = true;;
 
+let msg label text =
+  if debug then print_endline (">>> " ^ label ^ ": " ^  text);;
+
+(* ---------------------------------------------------------------- *)
 (**
    Return a list containing all subheading elements.
 *)
@@ -24,6 +28,15 @@ let is_heading_elem tag =
     (name = "H1" || name = "H2" || name = "H3" ||
         name = "H4" || name = "H5" || name = "H6");;
 
+(**
+   Determine whether tag is a heading element, or is some other
+   element whose sole text content resides in a heading element.
+*)
+let is_or_contains_only_heading_elem tag =
+  is_heading_elem tag ||
+    Testutil.all_text_content_in_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
+
+(* ---------------------------------------------------------------- *)
 (* MAP ELEMENTS AS NAVIGATION BARS *)
 
 (**
@@ -37,10 +50,13 @@ let is_map_elem tag =
    Criterion for a map element to be considered a navigation
    menu: It has to contain at least one area element.
 *)
-let is_nav_map tag =
+let is_nav_map tag prev =
   let areas = Testutil.get_descendants tag ["AREA"] in
-    (List.length areas) > 0;;
+  let is_menu = (List.length areas) > 0 in
+  let has_hdr = is_or_contains_only_heading_elem prev in
+    (is_menu, has_hdr);;
 
+(* ---------------------------------------------------------------- *)
 (* LIST ELEMENTS AS NAVIGATION BARS *)
 
 (**
@@ -51,51 +67,83 @@ let is_list_elem tag =
     name = "OL" || name = "UL";;
 
 (**
-  The functions is_item_link and is_nav_list are mutually
-  recursive, i.e., each calls the other.
+   Determine whether tag is a link element, or is some other
+   element whose sole text content resides in a link element.
+*)
+let is_or_contains_only_link_elem tag =
+  Html.tag_name tag = "A" ||
+  Testutil.all_text_content_in_descendant tag ["A"];;
 
-  is_item_link tests whether an element is an 'li', and if
-  so, whether its content weight equals that of its first
-  link descendant, or, if not, whether it contains a nested
-  list that is a nav_menu, and the containing 'li' content
-  weight equals that of its first link descendant plus that
-  of the nested nav_menu.
+(**
+   The functions is_item_link and is_nav_list are mutually
+   recursive, i.e., each calls the other.
 
-  is_nav_list tests whether all or all but one of its 'li'
-  child elements meet the is_item_link requirements.
+   is_item_link tests whether an element is an 'li', and if
+   so, whether its content weight equals that of its first
+   link descendant, or, if not, whether it contains a nested
+   list that is a nav_menu, and the containing 'li' content
+   weight equals that of its first link descendant plus that
+   of the nested nav_menu.
+
+   is_nav_list tests two separate conditions and returns a
+   pair (tuple) of boolean values:
+   1. Do all or all but one of its 'li' child elements meet
+   the is_item_link requirements (is_menu)?
+   2. Does the element immediately preceding the list menu
+   satisfy the requirements for heading/title (has_menu)?
 *)
 let rec is_item_link tag =
-  if debug then print_endline ">>> is_item_link";
-  if Html.tag_name tag = "LI"
-  then
-    let links = Testutil.get_descendants tag ["A"] in
-      if (List.length links) > 0
-      then (
-        if debug then print_endline (Html.get_node_content "" [Html.Tag (List.hd links)]);
-        let item_weight = Testutil.get_trimmed_content_weight tag in
-        let link_weight = Testutil.get_trimmed_content_weight (List.hd links) in
-          if item_weight = link_weight
-          then true
-          else
-            let lists = Testutil.get_descendants tag ["OL"; "UL"] in
-              if (List.length lists) > 0
-              then (
-                let nested_list = List.hd lists in
-                let list_weight = Testutil.get_trimmed_content_weight nested_list in
-                  (is_nav_list nested_list) && (item_weight = link_weight + list_weight)
-              )
-              else false
-      )
-      else (
-        if debug then print_endline ">>> no links found";
-        false
-      )
+  if not (Html.tag_name tag = "LI")
+  then false
   else (
-    if debug then print_endline ">>> not an LI element";
-    false
+    (* First, see if the list item contains a single link. *)
+    if Testutil.all_text_content_in_descendant tag ["A"]
+    then true (* We're done! *)
+    else (
+      (* Examine child elements and look for nav list preceded by heading/link *)
+      let children = Testutil.get_child_elements tag in
+        if (List.length children) > 0
+        then (
+          let first_child = List.hd children in
+            (* The first element must be a link. *)
+            if not (is_or_contains_only_link_elem first_child)
+            then false
+            else (
+              (* First element is effectively a link. *)
+              let remainder = List.tl children in
+                (* Only two possibilities re. what follows: either a list,
+                   or a heading element followed by a list. *)
+                if (List.length remainder) > 0
+                then (
+                  let head_rem = List.hd remainder in
+                    if is_list_elem head_rem && List.length remainder = 1
+                    then (
+                      let (is_menu, has_hdr) = is_nav_list head_rem first_child in
+                        is_menu && has_hdr
+                    )
+                    else (
+                      let tail_rem = List.tl remainder in
+                        if (List.length tail_rem) > 0
+                        then (
+                          let head_tail_rem = List.hd tail_rem in
+                            if is_list_elem head_tail_rem && List.length tail_rem = 1
+                            then (
+                              let (is_menu, has_hdr) = is_nav_list head_tail_rem head_rem in
+                                is_menu && has_hdr
+                            )
+                            else false
+                        )
+                        else false
+                    )
+                )
+                else false
+            )
+        )
+        else false
+    )
   )
-and is_nav_list tag =
-  if debug then print_endline ">>> is_nav_list";
+and is_nav_list tag prev =
+  msg "is_nav_list" (Html.get_node_content "" [Html.Tag prev]);
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with
@@ -107,76 +155,93 @@ and is_nav_list tag =
   in
   let items_with_links = count 0 list_items in
   let item_count = List.length list_items in
-    if debug then print_endline ("item_count: " ^ (string_of_int item_count) ^ " items_with_links: " ^ (string_of_int items_with_links));
+    msg "item_count" (string_of_int item_count);
+    msg "items_with_links" (string_of_int items_with_links);
     if (items_with_links > 0) && (item_count - items_with_links) <= 1
     then (
-      if debug then print_endline ">>> PASSED!!!";
-      true
+      if is_or_contains_only_heading_elem prev
+      then (
+        msg "is_nav_list" "T T";
+        (true, true)
+      )
+      else (
+        let parent = Html.tag_parent tag in
+          match parent with
+              Html.Tag t -> (
+                if (Html.tag_name t) = "LI" (* this is a nested list *)
+                then (
+                  if (Html.tag_name prev) = "A"
+                  then (true, true)
+                  else (true, false)
+                )
+                else (true, false)
+              )
+            | _ -> (true, false)
+      )
     )
     else (
-      if debug then print_endline ">>> FAILED!!!";
-      false
+      msg "is_nav_list" "F F";
+      (false, false)
     );;
 
+(* ---------------------------------------------------------------- *)
+(* GENERIC FUNCTION FOR DETECTING MENUS *)
 (**
    Count navigation menus that precede the last h1 element on the page
    and that are immediately preceded by a heading element.
-   @param pred1      predicate for general case: element type being examined
-   @param pred2      predicate for specific case: meets necessary criteria
-   @param h1s        number of h1 elements not yet seen
+   @param pred_elem  is this the element of interest?
+   @param pred_menu  is the element a navigation menu with title?
+   @param num_h1s    number of h1 elements not yet seen
+   @param top        seed element that will act as first previous tag
    @param doc_model  doc_model list
 *)
-let nav_menus_with_hdr_title pred1 pred2 h1s doc_model =
+let nav_menus_with_hdr_title pred_elem pred_menu num_h1s top doc_model =
   (**
-     @param status   1 if heading element just seen at head of list, 0 otherwise
-     @param cnt_m    number of navigation menus that are preceded by heading element
+     @param cnt_p    number of navigation menus preceded by heading element
      @param tot_m    total number of elements that qualify as navigation menus
      @param tot_l    total number of elements examined
      @param cnt_h1s  number of h1 elements not yet seen
      @param lst      doc_model list
   *)
-  let rec f status cnt_m tot_m tot_l cnt_h1s lst =
+  let rec f cnt_p tot_m tot_l cnt_h1s prev lst =
     if cnt_h1s = 0
-    then (cnt_m, tot_m, tot_l)
+    then (cnt_p, tot_m, tot_l)
     else (
       match lst with
           (Html.Tag t) :: tl ->
-            if debug then print_endline ("nmwht: " ^ (Html.tag_name t));
+            (* msg "curr" (Html.tag_name t); msg "prev" (Html.tag_name prev); *)
             if (Html.tag_name t) = "H1"
-            then
-              (* heading element just seen: set status flag *)
-              f 1 cnt_m tot_m tot_l (cnt_h1s - 1) ((Html.tag_children t) @ tl)
+            then f cnt_p tot_m tot_l (cnt_h1s - 1) t tl
             else (
-              if pred1 t (* general case: element type to be examined *)
+              if pred_elem t
               then (
-                if pred2 t (* specific case: meets all criteria *)
+                let (is_menu, has_hdr) = pred_menu t prev in
+                if is_menu
                 then (
-                  if debug then print_endline ("+++ true: " ^ (string_of_int (cnt_m + status)));
-                  if debug then print_endline ("+++ total: " ^ (string_of_int (tot_m + 1)));
-                  (* increment counters appropriately *)
-                  f 0 (cnt_m + status) (tot_m + 1) (tot_l + 1) cnt_h1s tl
+                  msg "is_menu T; tot_m" (string_of_int (tot_m + 1));
+                  if has_hdr
+                  then (
+                    msg "has_hdr T; cnt_p" (string_of_int (cnt_p + 1));
+                    f (cnt_p + 1) (tot_m + 1) (tot_l + 1) cnt_h1s t tl
+                  )
+                  else (
+                    msg "has_hdr F; cnt_p" (string_of_int cnt_p);
+                    f cnt_p (tot_m + 1) (tot_l + 1) cnt_h1s t tl
+                  )
                 )
                 else (
-                  if debug then print_endline ("+++ false: " ^ (string_of_int cnt_m));
-                  if debug then print_endline ("+++ total: " ^ (string_of_int tot_m));
-                  (* increment total list elements only *)
-                  f 0 cnt_m tot_m (tot_l + 1) cnt_h1s tl
+                  msg "is_menu F; tot_m" (string_of_int tot_m);
+                  f cnt_p tot_m (tot_l + 1) cnt_h1s t tl
                 )
               )
               else (
-                if is_heading_elem t
-                then
-                  (* set status flag *)
-                  f 1 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
-                else
-                  (* unset status flag *)
-                  f 0 cnt_m tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
+                f cnt_p tot_m tot_l cnt_h1s t ((Html.tag_children t) @ tl)
               )
             )
         | hd :: tl ->
             (* we're only interested in objects of type Html.Tag *)
-            f status cnt_m tot_m tot_l cnt_h1s tl
-        | [] -> (cnt_m, tot_m, tot_l)
+            f cnt_p tot_m tot_l cnt_h1s prev tl
+        | [] -> (cnt_p, tot_m, tot_l)
     )
   in
-    f 0 0 0 0 h1s doc_model;;
+    f 0 0 0 num_h1s top doc_model;;
