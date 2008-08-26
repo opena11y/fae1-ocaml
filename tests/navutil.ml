@@ -2,7 +2,7 @@
    Utility functions for navigation and orientation tests
 *)
 
-let debug = true;;
+let debug = false;;
 
 let msg label text =
   if debug then print_endline (">>> " ^ label ^ ": " ^  text);;
@@ -78,19 +78,27 @@ let is_or_contains_only_link_elem tag =
    The functions is_item_link and is_nav_list are mutually
    recursive, i.e., each calls the other.
 
-   is_item_link tests whether an element is an 'li', and if
-   so, whether its content weight equals that of its first
-   link descendant, or, if not, whether it contains a nested
-   list that is a nav_menu, and the containing 'li' content
-   weight equals that of its first link descendant plus that
-   of the nested nav_menu.
+   is_item_link tests whether an element is an "li", and if so, whether
+   its text content weight equals that of its first link descendant, or,
+   if not, whether it contains the following sequence of elements:
+   (1) a link (which may be encapsulated in another element) (2) an
+   optional element (expected to be a heading element, which also may be
+   encapsulated in another element) (3) a list element that is a nav menu,
+   determined by calling is_nav_list on the list and its preceding element.
 
-   is_nav_list tests two separate conditions and returns a
-   pair (tuple) of boolean values:
-   1. Do all or all but one of its 'li' child elements meet
-   the is_item_link requirements (is_menu)?
-   2. Does the element immediately preceding the list menu
-   satisfy the requirements for heading/title (has_menu)?
+   The implications of these requirements are: a nested list pattern
+   must always begin with a link, which must be followed by a nav menu
+   which, in the case of a nested list, may be preceded only by the
+   link, or may have an interposed heading element that follows the link
+   and precedes the list. On the other hand, a non-nested (top-level)
+   list must be preceded by a heading element.
+
+   is_nav_list tests two separate conditions and returns a pair (tuple)
+   of boolean values:
+   1. Do all or all but one of its "li" child elements meet the
+   is_item_link requirements (is_menu)?
+   2. Does the element immediately preceding the list menu satisfy the
+   requirements for heading/title (has_hdr)?
 *)
 let rec is_item_link tag =
   if not (Html.tag_name tag = "LI")
@@ -170,7 +178,7 @@ and is_nav_list tag prev =
               Html.Tag t -> (
                 if (Html.tag_name t) = "LI" (* this is a nested list *)
                 then (
-                  if (Html.tag_name prev) = "A"
+                  if is_or_contains_only_link_elem prev
                   then (true, true)
                   else (true, false)
                 )
