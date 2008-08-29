@@ -24,17 +24,21 @@ let get_subheading_elements page =
    Determine whether tag is a heading element.
 *)
 let is_heading_elem tag =
+  msg "is_heading_elem" (Html.tag_name tag);
   let name = Html.tag_name tag in
     (name = "H1" || name = "H2" || name = "H3" ||
         name = "H4" || name = "H5" || name = "H6");;
 
 (**
-   Determine whether tag is a heading element, or is some other
-   element whose sole text content resides in a heading element.
+   Given a tag, determine whether (a) it is a heading element, or (b) it has
+   a descendant that is a heading element and all of its text content is
+   contained by that element, or (c) it has an ancestor that is a heading
+   element and all of that element's text content is contained by it.
 *)
-let is_or_contains_only_heading_elem tag =
+let is_contains_or_contained_by_heading_elem tag =
   is_heading_elem tag ||
-    Testutil.all_text_content_in_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
+    Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"] ||
+    Testutil.all_text_content_in_named_ancestor tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
 
 (* ---------------------------------------------------------------- *)
 (* MAP ELEMENTS AS NAVIGATION BARS *)
@@ -51,9 +55,9 @@ let is_map_elem tag =
    menu: It has to contain at least one area element.
 *)
 let is_nav_map tag prev =
-  let areas = Testutil.get_descendants tag ["AREA"] in
+  let areas = Testutil.get_named_descendants tag ["AREA"] in
   let is_menu = (List.length areas) > 0 in
-  let has_hdr = is_or_contains_only_heading_elem prev in
+  let has_hdr = is_contains_or_contained_by_heading_elem prev in
     (is_menu, has_hdr);;
 
 (* ---------------------------------------------------------------- *)
@@ -67,12 +71,22 @@ let is_list_elem tag =
     name = "OL" || name = "UL";;
 
 (**
-   Determine whether tag is a link element, or is some other
-   element whose sole text content resides in a link element.
+   Determine whether tag is a link element, or it has a descendant
+   that is a link element and all of its text content is contained
+   by that element.
 *)
 let is_or_contains_only_link_elem tag =
   Html.tag_name tag = "A" ||
-  Testutil.all_text_content_in_descendant tag ["A"];;
+  Testutil.all_text_content_in_named_descendant tag ["A"];;
+
+(**
+   Determine whether tag is a link element, or it has an ancestor
+   that is a link element and all of that element's text content is
+   contained by it.
+*)
+let is_or_contained_by_link_elem tag =
+  Html.tag_name tag = "A" ||
+  Testutil.all_text_content_in_named_ancestor tag ["A"];;
 
 (**
    The functions is_item_link and is_nav_list are mutually
@@ -105,7 +119,7 @@ let rec is_item_link tag =
   then false
   else (
     (* First, see if the list item contains a single link. *)
-    if Testutil.all_text_content_in_descendant tag ["A"]
+    if Testutil.all_text_content_in_named_descendant tag ["A"]
     then true (* We're done! *)
     else (
       (* Examine child elements and look for nav list preceded by heading/link *)
@@ -167,7 +181,7 @@ and is_nav_list tag prev =
     msg "items_with_links" (string_of_int items_with_links);
     if (items_with_links > 0) && (item_count - items_with_links) <= 1
     then (
-      if is_or_contains_only_heading_elem prev
+      if is_contains_or_contained_by_heading_elem prev
       then (
         msg "is_nav_list" "T T";
         (true, true)
@@ -178,7 +192,7 @@ and is_nav_list tag prev =
               Html.Tag t -> (
                 if (Html.tag_name t) = "LI" (* this is a nested list *)
                 then (
-                  if is_or_contains_only_link_elem prev
+                  if is_or_contained_by_link_elem prev
                   then (true, true)
                   else (true, false)
                 )

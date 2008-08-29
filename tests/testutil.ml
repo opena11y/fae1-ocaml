@@ -5,13 +5,13 @@
 let debug = false;;
 
 (**
-  Given a predicate to be applied to each Html.Tag in an htmlItem
-  list, return the list of tags that satisfy the predicate.
+   Given a predicate to be applied to each Html.Tag in an htmlItem
+   list, return the list of tags that satisfy the predicate.
 
-  NOTE: This function is best used when operating on the entire
-  doc_model list. If you want to operate on a particular subset of
-  tags (for example all p tags), it's more efficient to get those
-  from the Html.tag_tbl structure and then use List.filter.
+   NOTE: This function is best used when operating on the entire
+   doc_model list. If you want to operate on a particular subset of
+   tags (for example all p tags), it's more efficient to get those
+   from the Html.tag_tbl structure and then use List.filter.
 *)
 let rec get_elements pred lst =
   match lst with
@@ -26,8 +26,8 @@ let rec get_elements pred lst =
 (* FUNCTIONS WITH PAGE ARG *)
 
 (**
-  Given a list of element names and a page, return the list
-  of elements with the specified names, in document order.
+   Given a list of element names and a page, return the list
+   of elements with the specified names, in document order.
 *)
 let get_elements_with_names names page =
   let doc_model = Html.doc_model (Page.document page) in
@@ -35,8 +35,8 @@ let get_elements_with_names names page =
     get_elements pred doc_model;;
 
 (**
-  Given an attribute name and a page, return the list of
-  elements with the specified attribute, in document order.
+   Given an attribute name and a page, return the list of
+   elements with the specified attribute, in document order.
 *)
 let get_elements_with_attribute name page =
   let doc_model = Html.doc_model (Page.document page) in
@@ -44,9 +44,9 @@ let get_elements_with_attribute name page =
     get_elements pred doc_model;;
 
 (**
-  Given an attribute name/value pair and a page, return
-  the list of elements with the specified attribute and
-  value, in document order.
+   Given an attribute name/value pair and a page, return
+   the list of elements with the specified attribute and
+   value, in document order.
 *)
 let get_elements_with_attribute_and_value (name, value) page =
   let doc_model = Html.doc_model (Page.document page) in
@@ -54,8 +54,8 @@ let get_elements_with_attribute_and_value (name, value) page =
     get_elements pred doc_model;;
 
 (**
-  Given an element name and a page, return the list of
-  elements (tags) with the specified name.
+   Given an element name and a page, return the list of
+   elements (tags) with the specified name.
 *)
 let get_elements_with_name name page =
   let tag_tbl = Html.tag_tbl (Page.document page) in
@@ -64,9 +64,9 @@ let get_elements_with_name name page =
 (* FUNCTIONS WITH TAG LIST ARG *)
 
 (**
-  Given an element name and a list of elements, return the
-  list of all successor elements to the first element with
-  the specified name, in document order.
+   Given an element name and a list of elements, return the
+   list of all successor elements to the first element with
+   the specified name, in document order.
 *)
 let rec get_successor_elements name lst =
   match lst with
@@ -77,9 +77,9 @@ let rec get_successor_elements name lst =
     | [] -> [];;
 
 (**
-  Given an element name and a list of elements, return the
-  list of all successor elements to the last occurrence of
-  the element with the specified name, in document order.
+   Given an element name and a list of elements, return the
+   list of all successor elements to the last occurrence of
+   the element with the specified name, in document order.
 *)
 let get_successor_elements_last_occurrence name lst =
   let lst1 = List.rev lst in
@@ -94,9 +94,9 @@ let get_successor_elements_last_occurrence name lst =
     f lst1 [];;
 
 (**
-  Given an element name and a list of elements, return true if
-  an element with the specified name is in the list, otherwise
-  return false.
+   Given an element name and a list of elements, return true if
+   an element with the specified name is in the list, otherwise
+   return false.
 *)
 let rec is_member_element name lst =
   match lst with
@@ -107,8 +107,8 @@ let rec is_member_element name lst =
     | [] -> false;;
 
 (**
-  Given an element name and a list of elements, return the
-  number of elements in the list with the specified name.
+   Given an element name and a list of elements, return the
+   number of elements in the list with the specified name.
 *)
 let count_elements_with_name name lst =
   let rec count n l =
@@ -122,8 +122,8 @@ let count_elements_with_name name lst =
     List.length (count name lst);;
 
 (**
-  Given an attribute name and a list of elements, return the
-  number of elements in the list with the specified attribute.
+   Given an attribute name and a list of elements, return the
+   number of elements in the list with the specified attribute.
 *)
 let count_elements_with_attribute name lst =
   let rec count n l =
@@ -139,11 +139,32 @@ let count_elements_with_attribute name lst =
 (* FUNCTIONS WITH TAG ARG *)
 
 (**
-  Given a tag and a list of element names, return the list of
-  elements that are descendants of tag and whose names match
-  one of those in the list of names.
+   Given a tag and a list of element names, return the list of
+   elements that are ancestors of tag and whose names match
+   one of those in the list of names.
 *)
-let get_descendants tag names =
+let get_named_ancestors tag names =
+  let rec f elem =
+    let parent = Html.tag_parent elem in
+      match parent with
+          (Html.Tag t) ->
+            if Html.tag_name t = "TOP"
+            then []
+            else (
+              if List.mem (Html.tag_name t) names
+              then t :: f t
+              else f t
+            )
+        | _ -> []
+  in
+    f tag;;
+
+(**
+   Given a tag and a list of element names, return the list of
+   elements that are descendants of tag and whose names match
+   one of those in the list of names.
+*)
+let get_named_descendants tag names =
   let rec f lst =
     match lst with
         (Html.Tag t) :: tl ->
@@ -157,11 +178,11 @@ let get_descendants tag names =
     f (Html.tag_children tag);;
 
 (**
-  Given a tag and a list of element names, return the number
-  of elements that are descendants of tag and whose names
-  match one of those in the list of names.
+   Given a tag and a list of element names, return the number
+   of elements that are descendants of tag and whose names
+   match one of those in the list of names.
 *)
-let count_descendants tag names =
+let count_named_descendants tag names =
   let rec count num lst =
     match lst with
         (Html.Tag t) :: tl ->
@@ -175,7 +196,7 @@ let count_descendants tag names =
     count 0 (Html.tag_children tag);;
 
 (**
-  Given a tag, return all of its child tag elements.
+   Given a tag, return all of its child tag elements.
 *)
 let get_child_elements tag =
   let rec f lst =
@@ -189,8 +210,8 @@ let get_child_elements tag =
     f (Html.tag_children tag);;
 
 (**
-  Given a tag, return the weight (total number of characters)
-  in all of its trimmed text and entity nodes.
+   Given a tag, return the weight (total number of characters)
+   in all of its trimmed text and entity nodes.
 *)
 let get_trimmed_content_weight tag =
   let rec f w lst =
@@ -207,25 +228,25 @@ let get_trimmed_content_weight tag =
     f 0 (Html.tag_children tag);;
 
 (**
-  Given a tag, test whether content weight is greater than zero.
+   Given a tag, test whether content weight is greater than zero.
 *)
 let has_content tag =
   let weight = get_trimmed_content_weight tag in
     weight > 0;;
 
 (**
-  Given a tag, test whether content weight, including img alt text, is greater than zero.
+   Given a tag, test whether content weight, including img alt text, is greater than zero.
 *)
 let has_content_with_img_alt tag =
   let content = Html.get_node_content_with_img_alt "" [Html.Tag tag] in
     String.length (Stringlib.trim content) > 0;;
 
 (**
-  Given a tag and a list of names, test whether all text content of tag is
-  contained within first descendant found with one of the specified names.
+   Given a tag and a list of names, test whether all text content of tag is
+   contained within first descendant found with one of the specified names.
 *)
-let all_text_content_in_descendant tag names =
-  let descendants = get_descendants tag names in
+let all_text_content_in_named_descendant tag names =
+  let descendants = get_named_descendants tag names in
     if List.length descendants > 0
     then (
       let first_descendant = List.hd descendants in
@@ -235,18 +256,33 @@ let all_text_content_in_descendant tag names =
     )
     else false;;
 
+(**
+   Given a tag and a list of names, test whether all text content of tag is
+   contained within first ancestor found with one of the specified names.
+*)
+let all_text_content_in_named_ancestor tag names =
+  let ancestors = get_named_ancestors tag names in
+    if List.length ancestors > 0
+    then (
+      let first_ancestor = List.hd ancestors in
+      let inner_weight = get_trimmed_content_weight first_ancestor in
+      let outer_weight = get_trimmed_content_weight tag in
+        inner_weight = outer_weight
+    )
+    else false;;
+
 (* FUNCTIONS WITH HASHTBL ARG *)
 
 (**
-  Given the Html.tag_tbl for a page and a key (tag name),
-  return the list of tags with the specified name.
+   Given the Html.tag_tbl for a page and a key (tag name),
+   return the list of tags with the specified name.
 *)
 let get_tags tbl name =
   try Hashtbl.find tbl name with _ -> [];;
 
 (**
-  Given the Html.tag_tbl for a page and a key (tag name),
-  return the number of tags with the specified name.
+   Given the Html.tag_tbl for a page and a key (tag name),
+   return the number of tags with the specified name.
 *)
 let count_tags tbl name =
   let tags = get_tags tbl name in
@@ -273,10 +309,10 @@ let icontains str sub =
   );;
 
 (**
-  Return the number of substrings that match regular
-  expression re in string str. Note that after each match,
-  count_matches resets its start position ahead one character
-  past the beginning of the substring previously matched.
+   Return the number of substrings that match regular
+   expression re in string str. Note that after each match,
+   count_matches resets its start position ahead one character
+   past the beginning of the substring previously matched.
 *)
 let count_matches re str =
   let rec f count start =
