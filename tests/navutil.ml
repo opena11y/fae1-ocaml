@@ -40,6 +40,11 @@ let is_contains_or_contained_by_heading_elem tag =
     Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"] ||
     Testutil.all_text_content_in_named_ancestor tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
 
+(**
+   Minimum number of links for map or list to be considered a navigation bar.
+*)
+let min_links = 2;;
+
 (* ---------------------------------------------------------------- *)
 (* MAP ELEMENTS AS NAVIGATION BARS *)
 
@@ -56,7 +61,7 @@ let is_map_elem tag =
 *)
 let is_nav_map tag prev =
   let areas = Testutil.get_named_descendants tag ["AREA"] in
-  let is_menu = (List.length areas) > 0 in
+  let is_menu = (List.length areas) >= min_links in
   let has_hdr = is_contains_or_contained_by_heading_elem prev in
     (is_menu, has_hdr);;
 
@@ -179,7 +184,7 @@ and is_nav_list tag prev =
   let item_count = List.length list_items in
     msg "item_count" (string_of_int item_count);
     msg "items_with_links" (string_of_int items_with_links);
-    if (items_with_links > 0) && (item_count - items_with_links) <= 1
+    if (items_with_links >= min_links) && (item_count - items_with_links) <= 1
     then (
       if is_contains_or_contained_by_heading_elem prev
       then (

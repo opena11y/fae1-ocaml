@@ -37,22 +37,23 @@ let test003p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 004p: How many of the frames have titles? *)
+(** 004p: How many of the frames do not have titles? *)
 let test004p site page =
   let test_id = "nav004p" in
     Testutil.msg test_id;
     let tag_tbl = (Html.tag_tbl (Page.document page)) in
     let frames = try Hashtbl.find tag_tbl "FRAME" with _ -> [] in
     let check_frames a b =
-      if (Html.has_attribute b "title")
+      if (Html.has_non_blank_attribute b "title")
       then a + 1
       else a
     in
     let count = List.fold_left check_frames 0 frames in
     let total = List.length frames in
-    let percent = Testutil.pct_of_ints count total in
+    let offenders = total - count in
+    let percent = Testutil.pct_of_ints offenders total in
     let results = [
-      ("cnt1", count);
+      ("cnt1", offenders);
       ("tot1", total);
       ("pct1", percent)
     ] in
@@ -63,12 +64,12 @@ let test004p site page =
 let test004s site pg_results =
   let test_id = "nav004s" in
     Testutil.msg test_id;
-    let (count, total, pg_count) =
+    let (count_offenders, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav004p" pg_results
     in
-    let percent = Testutil.pct_of_ints count total in
+    let percent = Testutil.pct_of_ints count_offenders total in
     let results = [
-      ("cnt1", count);
+      ("cnt1", count_offenders);
       ("tot1", total);
       ("pct1", percent);
       ("tot2", pg_count)
