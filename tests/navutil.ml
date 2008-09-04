@@ -43,7 +43,7 @@ let is_contains_or_contained_by_heading_elem tag =
 (**
    Minimum number of links for map or list to be considered a navigation bar.
 *)
-let min_links = 2;;
+let min_links = 1;;
 
 (* ---------------------------------------------------------------- *)
 (* MAP ELEMENTS AS NAVIGATION BARS *)
