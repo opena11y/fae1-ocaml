@@ -19,6 +19,8 @@ val count_elements_with_name :
   string -> Html.htmlItem Html.tag list -> int;;
 val count_elements_with_attribute :
   string -> Html.htmlItem Html.tag list -> int;;
+val get_attribute_values :
+  string -> Html.htmlItem Html.tag list -> string list;;
 
 val get_named_ancestors :
   Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
@@ -28,6 +30,8 @@ val count_named_descendants :
   Html.htmlItem Html.tag -> string list -> int;;
 val get_child_elements :
   Html.htmlItem Html.tag -> Html.htmlItem Html.tag list;;
+val get_named_child_elements:
+  Html.htmlItem Html.tag -> string -> Html.htmlItem Html.tag list;;
 val get_trimmed_content_weight :
   Html.htmlItem Html.tag -> int;;
 val has_content :
@@ -43,6 +47,9 @@ val get_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> Html.htmlItem Html.tag list;;
 val count_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> int;;
+
+val count_unique_strings:
+  string list -> int * int;;
 
 val contains :
   string -> string -> bool;;

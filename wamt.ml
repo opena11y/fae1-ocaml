@@ -16,6 +16,8 @@ open Wamttest
 let debug = false;;
 let debug_images = false;;
 
+let timestamp = ref 0.0;;
+
 let site_dir = ref "";;
 let out_file = ref "";;
 let rpt_name = ref "";;
@@ -50,6 +52,10 @@ let get_date_time () =
   let t = Unix.localtime (Unix.time ()) in
   let (day, month, year, hour, min, sec) = (t.tm_mday, t.tm_mon, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec) in
     Printf.sprintf "%04d-%02d-%02d %02d:%02d:%02d" (1900 + year) (month + 1) day hour min sec;;
+
+let get_process_time () =
+  let t = Unix.times () in
+    t.tms_utime +. t.tms_stime;;
 
 (**
    Given the top-level of a directory structure containing
@@ -95,7 +101,7 @@ let run_page_report site page page_tests =
     Wamtml.create_wamt_page_report (Page.pagename page)
       html_title
       (List.fold_left f [] page_tests)
-      (Unix.gettimeofday ());;
+      (get_process_time () -. !timestamp);;
 
 (**
    Filter for processing files with variant type Wamtfile.Image
@@ -121,6 +127,7 @@ let process_html_file file site =
   let site_dir = Site.sitedir site in
   match file with
       Wamtfile.Html fname -> (
+        timestamp := get_process_time ();
         let page = init_page fname site_dir in
         let page_tests = Wamttest.page_tests in
           Site.append_page_report site (run_page_report site page page_tests);

@@ -7,6 +7,7 @@ let version = "1.0.2";;
 
 let site_tests = [
   Navigation.test004s;
+  Navigation.test005s;
 
   Navigation.test010s;
   Navigation.test011s;
@@ -55,7 +56,8 @@ let site_tests = [
 
 let page_tests = [
   Navigation.test003p; (* data tables: no site test *)
-  Navigation.test004p; (* frame titles *)
+  Navigation.test004p;
+  Navigation.test005p;
 
   Navigation.test010p;
   Navigation.test011p;

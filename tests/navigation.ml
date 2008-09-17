@@ -77,6 +77,52 @@ let test004s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
+(** 005p: Number of framesets with duplicate frame title attribute values. *)
+let test005p site page =
+  let test_id = "nav005p" in
+    Testutil.msg test_id;
+    let tag_tbl = (Html.tag_tbl (Page.document page)) in
+    let framesets = try Hashtbl.find tag_tbl "FRAMESET" with _ -> [] in
+    let get_frame_titles frameset =
+      let frames = Testutil.get_named_child_elements frameset "FRAME" in
+        Testutil.get_attribute_values "title" frames
+    in
+    let check_framesets a b =
+      let titles = Stringlib.normalize_strings (get_frame_titles b) in
+      let (cnt_unique, tot_titles) = Testutil.count_unique_strings titles in
+      if cnt_unique = tot_titles
+      then a + 1
+      else a
+    in
+    let count = List.fold_left check_framesets 0 framesets in
+    let total = List.length framesets in
+    let offenders = total - count in
+    let percent = Testutil.pct_of_ints offenders total in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total);
+      ("pct1", percent)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 005s: sitewide aggregation of 005p results *)
+let test005s site pg_results =
+  let test_id = "nav005s" in
+    Testutil.msg test_id;
+    let (count_offenders, total, pg_count) =
+      Wamtml.sum_results "cnt1" "tot1" "nav005p" pg_results
+    in
+    let percent = Testutil.pct_of_ints count_offenders total in
+    let results = [
+      ("cnt1", count_offenders);
+      ("tot1", total);
+      ("pct1", percent);
+      ("tot2", pg_count)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (* TITLE ELEMENT *)
 (* ---------------------------------------------------------------- *)
 

@@ -19,6 +19,16 @@ let normalize_space s =
   Str.global_replace (Str.regexp "[ \t\n]+") " " (trim s);;
 
 (**
+   Given a list of strings, return a copy with each member of the
+   original list whitespace-normalized and converted to lowercase.
+*)
+let rec normalize_strings lst =
+  match lst with
+      hd :: tl ->
+        (String.lowercase (normalize_space hd)) :: normalize_strings tl
+    | [] -> [];;
+
+(**
    Given a character c, return a string of length 1
    where the first character is c.
 *)

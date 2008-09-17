@@ -136,6 +136,19 @@ let count_elements_with_attribute name lst =
   in
     List.length (count name lst);;
 
+(**
+   Given an attribute name and a list of elements, return a list
+   of strings where each member is the value of the named attribute
+   if present on the corresponding element, or an empty string if not.
+*)
+let get_attribute_values name elements =
+  let rec process lst =
+    match lst with
+        hd :: tl -> (Html.get_attribute_value hd name) :: process tl
+      | [] -> []
+  in
+    process elements;;
+
 (* FUNCTIONS WITH TAG ARG *)
 
 (**
@@ -205,6 +218,22 @@ let get_child_elements tag =
           t :: f tl
       | hd :: tl ->
           f tl
+      | [] -> []
+  in
+    f (Html.tag_children tag);;
+
+(**
+   Given a tag and an element name, return all the tag's
+   child elements of the specified name.
+*)
+let get_named_child_elements tag name =
+  let rec f lst =
+    match lst with
+        (Html.Tag t) :: tl ->
+          if Html.tag_name t = name
+          then t :: f tl
+          else f tl
+      | hd :: tl -> f tl
       | [] -> []
   in
     f (Html.tag_children tag);;
@@ -287,6 +316,29 @@ let get_tags tbl name =
 let count_tags tbl name =
   let tags = get_tags tbl name in
     List.length tags;;
+
+(* FUNCTIONS WITH STRING LIST ARG *)
+
+(**
+   Given a list of strings, return a pair (tuple) of ints with first
+   equal to the number of unique strings in the list, and second the
+   total number of strings.
+*)
+let count_unique_strings strings =
+  let rec f cnt lst =
+    match lst with
+        hd :: tl ->
+          let pred s =
+            String.compare hd s = 0
+          in
+          let (lp, lf) = List.partition pred tl in
+            if (List.length lp > 0)
+            then (f cnt lf)
+            else (f (cnt + 1) lf)
+      | [] -> cnt
+  in
+  let cnt_unique = f 0 strings in
+    (cnt_unique, List.length strings);;
 
 (* STRING SEARCH FUNCTIONS *)
 
