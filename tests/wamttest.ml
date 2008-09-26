@@ -5,6 +5,55 @@
 
 let version = "1.0.2";;
 
+let page_tests = [
+  Navigation.test001p;
+  Navigation.test003p; (* data tables: no site test *)
+  Navigation.test004p;
+  Navigation.test005p;
+
+  Navigation.test010p;
+  Navigation.test011p;
+
+  Navigation.test020p;
+  Navigation.test021p;
+  Navigation.test022p;
+  Navigation.test023p;
+  Navigation.test024p;
+
+  Navigation.test030p;
+  Navigation.test031p;
+  Navigation.test032p;
+
+  Navigation.test041p;
+  Navigation.test042p;
+  Navigation.test043p;
+
+  Navigation.test050p;
+  Navigation.test051p;
+  Navigation.test052p;
+  Navigation.test053p;
+
+  Text.test001p;
+  Text.test002p;
+  Text.test003p;
+  Text.test004p;
+  Text.test005p;
+  Text.test006p;
+
+  Automation.test001p;
+  Automation.test002p;
+  (* Automation.test003p; *)
+
+  Style.test001p;
+  Style.test002p;
+  Style.test003p;
+  Style.test004p;
+  Style.test005p;
+
+  Standards.test001p;
+  Standards.test002p;
+];;
+
 let site_tests = [
   Navigation.test004s;
   Navigation.test005s;
@@ -51,54 +100,4 @@ let site_tests = [
 
   Standards.test001s;
   Standards.test002s;
-  Standards.test003s;
-];;
-
-let page_tests = [
-  Navigation.test003p; (* data tables: no site test *)
-  Navigation.test004p;
-  Navigation.test005p;
-
-  Navigation.test010p;
-  Navigation.test011p;
-
-  Navigation.test020p;
-  Navigation.test021p;
-  Navigation.test022p;
-  Navigation.test023p;
-  Navigation.test024p;
-
-  Navigation.test030p;
-  Navigation.test031p;
-  Navigation.test032p;
-
-  Navigation.test041p;
-  Navigation.test042p;
-  Navigation.test043p;
-
-  Navigation.test050p;
-  Navigation.test051p;
-  Navigation.test052p;
-  Navigation.test053p;
-
-  Text.test001p;
-  Text.test002p;
-  Text.test003p;
-  Text.test004p;
-  Text.test005p;
-  Text.test006p;
-
-  Automation.test001p;
-  Automation.test002p;
-  (* Automation.test003p; *)
-
-  Style.test001p;
-  Style.test002p;
-  Style.test003p;
-  Style.test004p;
-  Style.test005p;
-
-  Standards.test001p;
-  Standards.test002p;
-  Standards.test003p;
 ];;

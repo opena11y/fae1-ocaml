@@ -6,6 +6,20 @@ open Wamtml
 open Navutil
 
 (* ---------------------------------------------------------------- *)
+(** 001p: Does the page's html element have a lang attribute with a
+    valid two-character IANA language code as its value?
+*)
+let test001p site page =
+  let test_id = "nav001p" in
+    Testutil.msg test_id;
+    let (has_lang_attr, is_valid_code) = Navutil.has_default_language page in
+    let results = [
+      ("b1", Testutil.int_of_bool has_lang_attr);
+      ("b2", Testutil.int_of_bool is_valid_code)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (** 003p: This test determines which tables on a page are data tables.
     It also stores some additional information about those tables so
     we don't have to process things multiple times. This test MUST be

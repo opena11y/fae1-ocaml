@@ -272,3 +272,56 @@ let nav_menus_with_hdr_title pred_elem pred_menu num_h1s top doc_model =
     )
   in
     f 0 0 0 num_h1s top doc_model;;
+
+(* ---------------------------------------------------------------- *)
+
+(**
+   List of two-character language codes from IANA registry.
+   Text file dated 2008-08-18 with 190 two-character entries.
+   See http://www.iana.org/assignments/language-subtag-registry.
+*)
+let language_codes = [
+  "aa"; "ab"; "ae"; "af"; "ak"; "am"; "an"; "ar"; "as"; "av"; "ay"; "az";
+  "ba"; "be"; "bg"; "bh"; "bi"; "bm"; "bn"; "bo"; "br"; "bs"; "ca"; "ce";
+  "ch"; "co"; "cr"; "cs"; "cu"; "cv"; "cy"; "da"; "de"; "dv"; "dz"; "ee";
+  "el"; "en"; "eo"; "es"; "et"; "eu"; "fa"; "ff"; "fi"; "fj"; "fo"; "fr";
+  "fy"; "ga"; "gd"; "gl"; "gn"; "gu"; "gv"; "ha"; "he"; "hi"; "ho"; "hr";
+  "ht"; "hu"; "hy"; "hz"; "ia"; "id"; "ie"; "ig"; "ii"; "ik"; "in"; "io";
+  "is"; "it"; "iu"; "iw"; "ja"; "ji"; "jv"; "jw"; "ka"; "kg"; "ki"; "kj";
+  "kk"; "kl"; "km"; "kn"; "ko"; "kr"; "ks"; "ku"; "kv"; "kw"; "ky"; "la";
+  "lb"; "lg"; "li"; "ln"; "lo"; "lt"; "lu"; "lv"; "mg"; "mh"; "mi"; "mk";
+  "ml"; "mn"; "mo"; "mr"; "ms"; "mt"; "my"; "na"; "nb"; "nd"; "ne"; "ng";
+  "nl"; "nn"; "no"; "nr"; "nv"; "ny"; "oc"; "oj"; "om"; "or"; "os"; "pa";
+  "pi"; "pl"; "ps"; "pt"; "qu"; "rm"; "rn"; "ro"; "ru"; "rw"; "sa"; "sc";
+  "sd"; "se"; "sg"; "sh"; "si"; "sk"; "sl"; "sm"; "sn"; "so"; "sq"; "sr";
+  "ss"; "st"; "su"; "sv"; "sw"; "ta"; "te"; "tg"; "th"; "ti"; "tk"; "tl";
+  "tn"; "to"; "tr"; "ts"; "tt"; "tw"; "ty"; "ug"; "uk"; "ur"; "uz"; "ve";
+  "vi"; "vo"; "wa"; "wo"; "xh"; "yi"; "yo"; "za"; "zh"; "zu"];;
+
+let is_valid_language_code str =
+  if String.length str = 2
+  then List.mem (String.lowercase str) language_codes
+  else false;;
+
+(**
+   Given a page, return a tuple pair with the following values:
+   (1) boolean indicating whether the "lang" attribute is present
+   on the "HTML" element, and (2) boolean indicating whether the
+   value of that attribute is a valid two-character language code.
+*)
+let has_default_language page =
+  let tbl = Html.tag_tbl (Page.document page) in
+  let html_tags = Hashtbl.find tbl "HTML" in
+    if List.length html_tags > 0
+    then (
+      let html_tag = List.hd html_tags in
+      let (has_attribute, value) = Testutil.has_attribute_get_value html_tag "lang" in
+        if has_attribute
+        then (
+          if is_valid_language_code value
+          then (true, true)
+          else (true, false)
+        )
+        else (false, false)
+    )
+    else (false, false);;

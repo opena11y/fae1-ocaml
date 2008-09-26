@@ -22,6 +22,8 @@ val count_elements_with_attribute :
 val get_attribute_values :
   string -> Html.htmlItem Html.tag list -> string list;;
 
+val has_attribute_get_value :
+  Html.htmlItem Html.tag -> string -> bool * string;;
 val get_named_ancestors :
   Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
 val get_named_descendants :

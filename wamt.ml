@@ -58,6 +58,30 @@ let get_process_time () =
     t.tms_utime +. t.tms_stime;;
 
 (**
+   Given a page, return the HTML DOCTYPE declaration if present,
+   or an empty string if not. This search relies on the special
+   name of "TOP" that is assigned to the root htmlItem of the
+   doc_model tree/list. TOP has type Html.Tag and contains the
+   document prologue.
+*)
+let get_html_doctype page =
+  let doc_model = Html.doc_model (Page.document page) in
+  let rec process lst =
+    match lst with
+        (Html.Tag t) :: tl ->
+          if Html.tag_name t = "TOP"
+          then process (Html.tag_children t)
+          else ""
+      | (Html.SpecialMarkup t) :: tl ->
+          if Testutil.contains t "DOCTYPE"
+          then t
+          else process tl
+      | _ :: tl -> process tl
+      | [] -> ""
+  in
+    process doc_model;;
+
+(**
    Given the top-level of a directory structure containing
    files to be analyzed and the list of wamt_files, create
    and initialize site structure.
@@ -78,6 +102,7 @@ let init_page fname site_dir =
   let normal_name = Stringlib.normalize_path (Stringlib.normalize_filename fname) site_dir in
   let p = Page.create_page doc in
     Page.set_pagename p normal_name;
+    Page.set_doctype p (get_html_doctype p);
     Html.generate_tag_table doc;
     p;;
 

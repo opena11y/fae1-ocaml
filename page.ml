@@ -5,25 +5,34 @@
 open Html
 
 (**
-   The type page is used to represent a single html page, which is
-   composed of a name (filename) and tree of htmlItems (htmlDoc).
+   The type page is used to represent a single HTML page, which is
+   composed of a name (filename), a doctype (DOCTYPE declaration)
+   and a tree of htmlItems (htmlDoc).
 *)
 type page = {
   mutable pagename : string;
+  mutable doctype  : string;
   mutable document : Html.htmlDoc;
 }
 
 (** Generic constructor for pages *)
 let create_page doc = {
   pagename = "";
+  doctype  = "";
   document = doc;
 }
 
 (** Set pagename of page p to string n *)
 let set_pagename p n = p.pagename <- n;;
 
+(** Set doctype of page p to string s *)
+let set_doctype p s = p.doctype <- s;;
+
 (** Get pagename of page p *)
 let pagename p = p.pagename;;
+
+(** Get doctype of page p *)
+let doctype p = p.doctype;;
 
 (** Get document of page p *)
 let document p = p.document;;

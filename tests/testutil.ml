@@ -152,6 +152,17 @@ let get_attribute_values name elements =
 (* FUNCTIONS WITH TAG ARG *)
 
 (**
+   Given a tag and an attribute name, return a tuple pair with the
+   following values: (1) boolean indicating whether the attribute was
+   found on the element; (2) string value of the attribute (an empty
+   string if the attribute was not found).
+*)
+let has_attribute_get_value tag name =
+  if Html.has_attribute tag name
+  then (true, (Stringlib.normalize_space (Html.get_attribute_value tag name)))
+  else (false, "");;
+
+(**
    Given a tag and a list of element names, return the list of
    elements that are ancestors of tag and whose names match
    one of those in the list of names.
@@ -347,7 +358,7 @@ let contains str sub =
   if (String.length sub) = 0
   then false
   else (
-    try (Str.search_forward (Str.regexp sub) str 0) >= 0
+    try (Str.search_forward (Str.regexp_string sub) str 0) >= 0
     with Not_found -> false
   );;
 
@@ -356,7 +367,7 @@ let icontains str sub =
   if (String.length sub) = 0
   then false
   else (
-    try (Str.search_forward (Str.regexp_case_fold sub) str 0) >= 0
+    try (Str.search_forward (Str.regexp_string_case_fold sub) str 0) >= 0
     with Not_found -> false
   );;
 
