@@ -276,8 +276,8 @@ let nav_menus_with_hdr_title pred_elem pred_menu num_h1s top doc_model =
 (* ---------------------------------------------------------------- *)
 
 (**
-   List of two-character language codes from IANA registry.
-   Text file dated 2008-08-18 with 190 two-character entries.
+   List of two-character language subtags defined in IANA registry
+   dated 2008-08-18 with 190 two-character entries.
    See http://www.iana.org/assignments/language-subtag-registry.
 *)
 let language_codes = [
@@ -298,10 +298,24 @@ let language_codes = [
   "tn"; "to"; "tr"; "ts"; "tt"; "tw"; "ty"; "ug"; "uk"; "ur"; "uz"; "ve";
   "vi"; "vo"; "wa"; "wo"; "xh"; "yi"; "yo"; "za"; "zh"; "zu"];;
 
+(**
+   Given an attribute value, if it contains a hyphen, which could act as
+   a separator between language and region subtags, extract the language
+   subtag prefix; otherwise return the original value.
+*)
+let get_language_subtag str =
+  if String.contains str '-'
+  then List.hd (Str.split (Str.regexp "-") str)
+  else str;;
+
+(**
+   Test string for membership in the two-character language_codes list.
+*)
 let is_valid_language_code str =
-  if String.length str = 2
-  then List.mem (String.lowercase str) language_codes
-  else false;;
+  let subtag = get_language_subtag str in
+    if String.length subtag = 2
+    then List.mem (String.lowercase subtag) language_codes
+    else false;;
 
 (**
    Given a page, return a tuple pair with the following values:
