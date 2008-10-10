@@ -25,20 +25,27 @@ let get_subheading_elements page =
 *)
 let is_heading_elem tag =
   msg "is_heading_elem" (Html.tag_name tag);
-  let name = Html.tag_name tag in
-    (name = "H1" || name = "H2" || name = "H3" ||
-        name = "H4" || name = "H5" || name = "H6");;
+  match Html.tag_name tag with
+    | "H1" -> true
+    | "H2" -> true
+    | "H3" -> true
+    | "H4" -> true
+    | "H5" -> true
+    | "H6" -> true
+    | _ -> false;;
 
 (**
    Given a tag, determine whether (a) it is a heading element, or (b) it has
    a descendant that is a heading element and all of its text content is
    contained by that element, or (c) it has an ancestor that is a heading
-   element and all of that element's text content is contained by it.
+   element. (The requirement for the tag to contain the same text content
+   as its heading ancestor has been dropped to account for markup patterns
+   such as an empty a element within a heading element.)
 *)
 let is_contains_or_contained_by_heading_elem tag =
-  is_heading_elem tag ||
-    Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"] ||
-    Testutil.all_text_content_in_named_ancestor tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
+  is_heading_elem tag
+  || Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"]
+  || Testutil.has_named_ancestor tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
 
 (**
    Minimum number of links for map or list to be considered a navigation bar.

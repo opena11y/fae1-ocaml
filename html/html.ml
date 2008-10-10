@@ -155,13 +155,13 @@ let has_attribute_with_value t attr attr_value =
    convenience in certain operations.
 *)
 type htmlItem =
-    Tag of htmlItem tag |
-        Entity of string |
-            Text of string |
-                SpecialMarkup of string |
-                    ProcessingInstruction of string |
-                        Comment of string |
-                            NULL;;
+    Tag of htmlItem tag
+  | Entity of string
+  | Text of string
+  | SpecialMarkup of string
+  | ProcessingInstruction of string
+  | Comment of string
+  | NULL;;
 
 (**
    Given an attribute a, return the string representation
@@ -177,12 +177,10 @@ let attribute_to_string a =
    using the string function, concatenating the list and placing
    the string delim between each pair of strings when folding.
 *)
-let fold_to_string
-    (lst : 'a list)
-    (s_f : 'a -> string)
-    (delim : string)  =
+let fold_to_string (lst : 'a list) (str_fn : 'a -> string) (delim : string)  =
   let f a b =
-    (s_f a)^delim^b in
+    (str_fn a) ^ delim ^ b
+  in
     List.fold_right f lst "";;
 
 (**
@@ -194,14 +192,9 @@ let rec htmlItem_to_string padding_str h =
   match h with
       Tag t -> (
         let n_s = t.name in
-        let attr_s = fold_to_string (t.attributes)
-          (attribute_to_string)
-          " " in
-        let ch_s = fold_to_string (t.children)
-          (htmlItem_to_string (padding_str^"  "))
-          "" in
-          Printf.sprintf "\n%s<%s %s>%s%s</%s>\n"
-            padding_str n_s  attr_s ch_s padding_str n_s
+        let attr_s = fold_to_string (t.attributes) (attribute_to_string) " " in
+        let ch_s = fold_to_string (t.children) (htmlItem_to_string (padding_str^"  ")) "" in
+          Printf.sprintf "\n%s<%s %s>%s%s</%s>\n" padding_str n_s  attr_s ch_s padding_str n_s
       )
     | Entity s -> (padding_str^"&"^s^";")
     | Text s -> (padding_str^s)

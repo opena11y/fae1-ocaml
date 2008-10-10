@@ -26,6 +26,8 @@ val has_attribute_get_value :
   Html.htmlItem Html.tag -> string -> bool * string;;
 val get_named_ancestors :
   Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
+val has_named_ancestor :
+  Html.htmlItem Html.tag -> string list -> bool;;
 val get_named_descendants :
   Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
 val count_named_descendants :

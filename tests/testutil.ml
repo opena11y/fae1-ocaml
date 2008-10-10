@@ -184,6 +184,15 @@ let get_named_ancestors tag names =
     f tag;;
 
 (**
+   Given a tag and a list of element names, return a boolean
+   value indicating whether the tag has an ancestor with one
+   of those names.
+*)
+let has_named_ancestor tag names =
+  let ancestors = get_named_ancestors tag names in
+    List.length ancestors > 0;;
+
+(**
    Given a tag and a list of element names, return the list of
    elements that are descendants of tag and whose names match
    one of those in the list of names.
