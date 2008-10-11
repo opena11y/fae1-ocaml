@@ -2,10 +2,18 @@
    Utility functions for navigation and orientation tests
 *)
 
-let debug = false;;
+let debug = false
 
 let msg label text =
-  if debug then print_endline (">>> " ^ label ^ ": " ^  text);;
+  if debug then print_endline (">>> " ^ label ^ ": " ^  text)
+
+let rec linefeed n =
+  if debug then (
+    if n > 0 then (
+      print_newline ();
+      linefeed (n - 1)
+    )
+  )
 
 (* ---------------------------------------------------------------- *)
 (**
@@ -177,7 +185,9 @@ let rec is_item_link tag =
     )
   )
 and is_nav_list tag prev =
-  msg "is_nav_list" (Html.get_node_content "" [Html.Tag prev]);
+  linefeed 1;
+  msg "is_nav_list" (Testutil.item_to_string (Html.Tag prev));
+  msg "get_pre_sib" (Testutil.item_to_string (Testutil.get_preceding_sibling tag));
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with

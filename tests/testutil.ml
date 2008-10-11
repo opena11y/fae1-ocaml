@@ -491,3 +491,51 @@ let avg_of_ratios sum_ratios count =
 let msg s =
   if debug
   then print_endline ("Running " ^ s);;
+
+(* HTMLITEM FUNCTIONS *)
+
+let item_to_string (item : Html.htmlItem) =
+  Stringlib.trim (Html.htmlItem_to_string "" item)
+
+let is_printable_string str =
+  String.length (Stringlib.normalize_space str) > 0
+
+let is_printable_entity str =
+  match str with
+    | "#09"  -> false
+    | "#10"  -> false
+    | "#13"  -> false
+    | "#32"  -> false
+    | "nbsp" -> false
+    | _ -> true
+
+let rec get_next_item (lst : Html.htmlItem list) =
+  match lst with
+      Html.Tag tag :: tl -> (Html.Tag tag)
+    | Html.Text s :: tl ->
+        if is_printable_string s
+        then (Html.Text s)
+        else get_next_item tl
+    | Html.Entity e :: tl ->
+        if is_printable_entity e
+        then (Html.Entity e)
+        else get_next_item tl
+    | _ :: tl -> get_next_item tl
+    | [] -> Html.NULL
+
+let rec get_following_items (item : Html.htmlItem) (lst : Html.htmlItem list) =
+  match lst with
+      Html.Tag tag :: tl ->
+        if compare item (Html.Tag tag) = 0 then tl else get_following_items item tl
+    | hd :: tl ->
+        get_following_items item tl
+    | [] -> []
+
+let get_preceding_sibling (tag : Html.htmlItem Html.tag) =
+  let parent = Html.tag_parent tag in
+    match parent with
+        Html.Tag p ->
+          let rev_siblings = List.rev (Html.tag_children p) in
+          let predecessors = get_following_items (Html.Tag tag) rev_siblings in
+            get_next_item predecessors
+      | _ -> Html.NULL

@@ -88,3 +88,8 @@ val avg_of_ratios :
 
 val msg :
   string -> unit;;
+
+val item_to_string :
+  Html.htmlItem -> string;;
+val get_preceding_sibling :
+  Html.htmlItem Html.tag -> Html.htmlItem;;
