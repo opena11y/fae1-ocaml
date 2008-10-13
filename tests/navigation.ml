@@ -628,10 +628,8 @@ let test041p site page =
     let doc_model = Html.doc_model (Page.document page) in
     let h1s = Testutil.get_elements_with_name "H1" page in
     let cnt_h1s = List.length h1s in
-    let tops = Testutil.get_elements_with_name "TOP" page in
-    let top = List.hd tops in
     let (count, total_menus, total_ol_ul) =
-      nav_menus_with_hdr_title is_list_elem is_nav_list cnt_h1s top doc_model
+      nav_menus_with_hdr_title is_list_elem is_nav_list cnt_h1s doc_model
     in
     let offenders = total_menus - count in
     let percent = Testutil.pct_of_ints offenders total_menus in
@@ -670,10 +668,8 @@ let test042p site page =
     let doc_model = Html.doc_model (Page.document page) in
     let h1s = Testutil.get_elements_with_name "H1" page in
     let cnt_h1s = List.length h1s in
-    let tops = Testutil.get_elements_with_name "TOP" page in
-    let top = List.hd tops in
     let (count, total_menus, total_maps) =
-      nav_menus_with_hdr_title is_map_elem is_nav_map cnt_h1s top doc_model
+      nav_menus_with_hdr_title is_map_elem is_nav_map cnt_h1s doc_model
     in
     let offenders = total_menus - count in
     let percent = Testutil.pct_of_ints offenders total_menus in

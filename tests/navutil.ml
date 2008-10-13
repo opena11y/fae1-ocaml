@@ -43,17 +43,16 @@ let is_heading_elem tag =
     | _ -> false;;
 
 (**
-   Given a tag, determine whether (a) it is a heading element, or (b) it has
-   a descendant that is a heading element and all of its text content is
-   contained by that element, or (c) it has an ancestor that is a heading
-   element. (The requirement for the tag to contain the same text content
-   as its heading ancestor has been dropped to account for markup patterns
-   such as an empty a element within a heading element.)
+   Given an htmlItem, determine whether (a) it is a heading element, or
+   (b) it has a descendant that is a heading element and all of its text
+   content is contained by that element.
 *)
-let is_contains_or_contained_by_heading_elem tag =
-  is_heading_elem tag
-  || Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"]
-  || Testutil.has_named_ancestor tag ["H1";"H2";"H3";"H4";"H5";"H6"];;
+let is_or_contains_only_heading_elem (item : Html.htmlItem) =
+  match item with
+      Html.Tag tag ->
+        is_heading_elem tag
+        || Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"]
+    | _ -> false;;
 
 (**
    Minimum number of links for map or list to be considered a navigation bar.
@@ -74,10 +73,10 @@ let is_map_elem tag =
    Criterion for a map element to be considered a navigation
    menu: It has to contain at least one area element.
 *)
-let is_nav_map tag prev =
+let is_nav_map tag =
   let areas = Testutil.get_named_descendants tag ["AREA"] in
   let is_menu = (List.length areas) >= min_links in
-  let has_hdr = is_contains_or_contained_by_heading_elem prev in
+  let has_hdr = is_or_contains_only_heading_elem (Testutil.get_preceding_sibling tag) in
     (is_menu, has_hdr);;
 
 (* ---------------------------------------------------------------- *)
@@ -95,18 +94,12 @@ let is_list_elem tag =
    that is a link element and all of its text content is contained
    by that element.
 *)
-let is_or_contains_only_link_elem tag =
-  Html.tag_name tag = "A" ||
-  Testutil.all_text_content_in_named_descendant tag ["A"];;
-
-(**
-   Determine whether tag is a link element, or it has an ancestor
-   that is a link element and all of that element's text content is
-   contained by it.
-*)
-let is_or_contained_by_link_elem tag =
-  Html.tag_name tag = "A" ||
-  Testutil.all_text_content_in_named_ancestor tag ["A"];;
+let is_or_contains_only_link_elem (item : Html.htmlItem) =
+  match item with
+      Html.Tag tag ->
+        Html.tag_name tag = "A"
+        || Testutil.all_text_content_in_named_descendant tag ["A"]
+    | _ -> false;;
 
 (**
    The functions is_item_link and is_nav_list are mutually
@@ -148,7 +141,7 @@ let rec is_item_link tag =
         then (
           let first_child = List.hd children in
             (* The first element must be a link. *)
-            if not (is_or_contains_only_link_elem first_child)
+            if not (is_or_contains_only_link_elem (Html.Tag first_child))
             then false
             else (
               (* First element is effectively a link. *)
@@ -160,7 +153,7 @@ let rec is_item_link tag =
                   let head_rem = List.hd remainder in
                     if is_list_elem head_rem && List.length remainder = 1
                     then (
-                      let (is_menu, has_hdr) = is_nav_list head_rem first_child in
+                      let (is_menu, has_hdr) = is_nav_list head_rem in
                         is_menu && has_hdr
                     )
                     else (
@@ -170,7 +163,7 @@ let rec is_item_link tag =
                           let head_tail_rem = List.hd tail_rem in
                             if is_list_elem head_tail_rem && List.length tail_rem = 1
                             then (
-                              let (is_menu, has_hdr) = is_nav_list head_tail_rem head_rem in
+                              let (is_menu, has_hdr) = is_nav_list head_tail_rem in
                                 is_menu && has_hdr
                             )
                             else false
@@ -184,10 +177,9 @@ let rec is_item_link tag =
         else false
     )
   )
-and is_nav_list tag prev =
-  linefeed 1;
-  msg "is_nav_list" (Testutil.item_to_string (Html.Tag prev));
-  msg "get_pre_sib" (Testutil.item_to_string (Testutil.get_preceding_sibling tag));
+and is_nav_list tag =
+  linefeed 3;
+  msg "is_nav_list" ("entry tag_name: " ^ (Html.tag_name tag));
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with
@@ -203,25 +195,30 @@ and is_nav_list tag prev =
     msg "items_with_links" (string_of_int items_with_links);
     if (items_with_links >= min_links) && (item_count - items_with_links) <= 1
     then (
-      if is_contains_or_contained_by_heading_elem prev
-      then (
-        msg "is_nav_list" "T T";
-        (true, true)
-      )
-      else (
-        let parent = Html.tag_parent tag in
-          match parent with
-              Html.Tag t -> (
-                if (Html.tag_name t) = "LI" (* this is a nested list *)
-                then (
-                  if is_or_contained_by_link_elem prev
-                  then (true, true)
+      let preceding_sibling = Testutil.get_preceding_sibling tag in
+        msg "preceding_sibling" (Testutil.item_to_string preceding_sibling);
+        if is_or_contains_only_heading_elem preceding_sibling
+        then (
+          msg "is_nav_list" "T T";
+          (true, true)
+        )
+        else (
+          let parent = Html.tag_parent tag in
+            match parent with
+                Html.Tag t -> (
+                  if (Html.tag_name t) = "LI" (* this is a nested list *)
+                  then (
+                    if is_or_contains_only_link_elem preceding_sibling
+                    then (
+                      msg "is_nav_list" "T T";
+                      (true, true)
+                    )
+                    else (true, false)
+                  )
                   else (true, false)
                 )
-                else (true, false)
-              )
-            | _ -> (true, false)
-      )
+              | _ -> (true, false)
+        )
     )
     else (
       msg "is_nav_list" "F F";
@@ -236,10 +233,9 @@ and is_nav_list tag prev =
    @param pred_elem  is this the element of interest?
    @param pred_menu  is the element a navigation menu with title?
    @param num_h1s    number of h1 elements not yet seen
-   @param top        seed element that will act as first previous tag
    @param doc_model  doc_model list
 *)
-let nav_menus_with_hdr_title pred_elem pred_menu num_h1s top doc_model =
+let nav_menus_with_hdr_title pred_elem pred_menu num_h1s doc_model =
   (**
      @param cnt_p    number of navigation menus preceded by heading element
      @param tot_m    total number of elements that qualify as navigation menus
@@ -247,48 +243,47 @@ let nav_menus_with_hdr_title pred_elem pred_menu num_h1s top doc_model =
      @param cnt_h1s  number of h1 elements not yet seen
      @param lst      doc_model list
   *)
-  let rec f cnt_p tot_m tot_l cnt_h1s prev lst =
+  let rec f cnt_p tot_m tot_l cnt_h1s lst =
     if cnt_h1s = 0
     then (cnt_p, tot_m, tot_l)
     else (
       match lst with
-          (Html.Tag t) :: tl ->
-            (* msg "curr" (Html.tag_name t); msg "prev" (Html.tag_name prev); *)
+          Html.Tag t :: tl ->
             if (Html.tag_name t) = "H1"
-            then f cnt_p tot_m tot_l (cnt_h1s - 1) t tl
+            then f cnt_p tot_m tot_l (cnt_h1s - 1) tl
             else (
               if pred_elem t
               then (
-                let (is_menu, has_hdr) = pred_menu t prev in
+                let (is_menu, has_hdr) = pred_menu t in
                 if is_menu
                 then (
                   msg "is_menu T; tot_m" (string_of_int (tot_m + 1));
                   if has_hdr
                   then (
                     msg "has_hdr T; cnt_p" (string_of_int (cnt_p + 1));
-                    f (cnt_p + 1) (tot_m + 1) (tot_l + 1) cnt_h1s t tl
+                    f (cnt_p + 1) (tot_m + 1) (tot_l + 1) cnt_h1s tl
                   )
                   else (
                     msg "has_hdr F; cnt_p" (string_of_int cnt_p);
-                    f cnt_p (tot_m + 1) (tot_l + 1) cnt_h1s t tl
+                    f cnt_p (tot_m + 1) (tot_l + 1) cnt_h1s tl
                   )
                 )
                 else (
                   msg "is_menu F; tot_m" (string_of_int tot_m);
-                  f cnt_p tot_m (tot_l + 1) cnt_h1s t tl
+                  f cnt_p tot_m (tot_l + 1) cnt_h1s tl
                 )
               )
               else (
-                f cnt_p tot_m tot_l cnt_h1s t ((Html.tag_children t) @ tl)
+                f cnt_p tot_m tot_l cnt_h1s ((Html.tag_children t) @ tl)
               )
             )
         | hd :: tl ->
             (* we're only interested in objects of type Html.Tag *)
-            f cnt_p tot_m tot_l cnt_h1s prev tl
+            f cnt_p tot_m tot_l cnt_h1s tl
         | [] -> (cnt_p, tot_m, tot_l)
     )
   in
-    f 0 0 0 num_h1s top doc_model;;
+    f 0 0 0 num_h1s doc_model;;
 
 (* ---------------------------------------------------------------- *)
 
