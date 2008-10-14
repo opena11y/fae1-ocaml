@@ -29,18 +29,15 @@ let get_subheading_elements page =
     (h2@h3@h4@h5@h6);;
 
 (**
+   List of valid heading element names.
+*)
+let heading_names = ["H1";"H2";"H3";"H4";"H5";"H6"]
+
+(**
    Determine whether tag is a heading element.
 *)
-let is_heading_elem tag =
-  msg "is_heading_elem" (Html.tag_name tag);
-  match Html.tag_name tag with
-    | "H1" -> true
-    | "H2" -> true
-    | "H3" -> true
-    | "H4" -> true
-    | "H5" -> true
-    | "H6" -> true
-    | _ -> false;;
+let is_heading_elem (tag : Html.htmlItem Html.tag) =
+  List.mem (Html.tag_name tag) heading_names
 
 (**
    Given an htmlItem, determine whether (a) it is a heading element, or
@@ -51,7 +48,7 @@ let is_or_contains_only_heading_elem (item : Html.htmlItem) =
   match item with
       Html.Tag tag ->
         is_heading_elem tag
-        || Testutil.all_text_content_in_named_descendant tag ["H1";"H2";"H3";"H4";"H5";"H6"]
+        || Testutil.all_text_content_in_named_descendant tag heading_names
     | _ -> false;;
 
 (**
@@ -146,24 +143,24 @@ let rec is_item_link tag =
             else (
               (* First element is effectively a link. *)
               let remainder = List.tl children in
-                (* Only two possibilities re. what follows: either a list,
-                   or a heading element followed by a list. *)
+                (* Only two valid possibilities exist re. what follows:
+                   either a list, or a heading element followed by a list. *)
                 if (List.length remainder) > 0
                 then (
-                  let head_rem = List.hd remainder in
-                    if is_list_elem head_rem && List.length remainder = 1
+                  let second_child = List.hd remainder in
+                    if is_list_elem second_child && List.length remainder = 1
                     then (
-                      let (is_menu, has_hdr) = is_nav_list head_rem in
+                      let (is_menu, has_hdr) = is_nav_list second_child in
                         is_menu && has_hdr
                     )
                     else (
                       let tail_rem = List.tl remainder in
                         if (List.length tail_rem) > 0
                         then (
-                          let head_tail_rem = List.hd tail_rem in
-                            if is_list_elem head_tail_rem && List.length tail_rem = 1
+                          let third_child = List.hd tail_rem in
+                            if is_list_elem third_child && List.length tail_rem = 1
                             then (
-                              let (is_menu, has_hdr) = is_nav_list head_tail_rem in
+                              let (is_menu, has_hdr) = is_nav_list third_child in
                                 is_menu && has_hdr
                             )
                             else false
@@ -178,8 +175,8 @@ let rec is_item_link tag =
     )
   )
 and is_nav_list tag =
-  linefeed 3;
-  msg "is_nav_list" ("entry tag_name: " ^ (Html.tag_name tag));
+  linefeed 2;
+  msg "is_nav_list" (Html.get_node_content "" [Testutil.get_preceding_sibling tag]);
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with

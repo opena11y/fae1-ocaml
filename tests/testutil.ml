@@ -509,24 +509,30 @@ let is_printable_entity str =
     | "nbsp" -> false
     | _ -> true
 
-let rec get_next_item (lst : Html.htmlItem list) =
+let is_valid_item (item : Html.htmlItem) =
+  match item with
+    | Html.Tag tag   -> true
+    | Html.Text s    -> is_printable_string s
+    | Html.Entity e  -> is_printable_entity e
+    | _              -> false
+
+let rec next_valid_item (lst : Html.htmlItem list) =
   match lst with
-      Html.Tag tag :: tl -> (Html.Tag tag)
-    | Html.Text s :: tl ->
-        if is_printable_string s
-        then (Html.Text s)
-        else get_next_item tl
-    | Html.Entity e :: tl ->
-        if is_printable_entity e
-        then (Html.Entity e)
-        else get_next_item tl
-    | _ :: tl -> get_next_item tl
+    | hd :: tl ->
+        if is_valid_item hd
+        then hd
+        else next_valid_item tl
     | [] -> Html.NULL
+
+let count_valid_items (lst : Html.htmlItem list) =
+  List.length (List.filter is_valid_item lst)
 
 let rec get_following_items (item : Html.htmlItem) (lst : Html.htmlItem list) =
   match lst with
-      Html.Tag tag :: tl ->
-        if compare item (Html.Tag tag) = 0 then tl else get_following_items item tl
+    | Html.Tag tag :: tl ->
+        if compare item (Html.Tag tag) = 0
+        then tl
+        else get_following_items item tl
     | hd :: tl ->
         get_following_items item tl
     | [] -> []
@@ -534,8 +540,8 @@ let rec get_following_items (item : Html.htmlItem) (lst : Html.htmlItem list) =
 let get_preceding_sibling (tag : Html.htmlItem Html.tag) =
   let parent = Html.tag_parent tag in
     match parent with
-        Html.Tag p ->
+      | Html.Tag p ->
           let rev_siblings = List.rev (Html.tag_children p) in
           let predecessors = get_following_items (Html.Tag tag) rev_siblings in
-            get_next_item predecessors
+            next_valid_item predecessors
       | _ -> Html.NULL
