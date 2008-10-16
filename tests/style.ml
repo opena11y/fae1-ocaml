@@ -11,13 +11,13 @@ open Stringlib
 open Testutil
 open Wamtml
 
-let debug = false;;
+let debug = false
+let msg = (Testutil.msg debug)
 
 (* ---------------------------------------------------------------- *)
 (** 001p: Percentage of content styled by inline style tags *)
 let test001p site page =
   let test_id = "style001p" in
-    Testutil.msg test_id;
     let doc_model = Html.doc_model (Page.document page) in
     let style_tags = ["B";"I";
                       "FONT";"U";
@@ -55,7 +55,6 @@ let test001p site page =
 (** 001s: Site average of 001p *)
 let test001s site pg_results =
   let test_id = "style001s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "style001p" pg_results
     in
@@ -72,7 +71,6 @@ let test001s site pg_results =
 (** 002p: How many nested tables, and at what maximum depth *)
 let test002p site page =
   let test_id = "style002p" in
-    Testutil.msg test_id;
     let doc_model = Html.doc_model (Page.document page) in
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let table_count =
@@ -91,7 +89,6 @@ let test002p site page =
 (** 002s: Site average of 002p *)
 let test002s site pg_results =
   let test_id = "style002s" in
-    Testutil.msg test_id;
     let (nested, total, max, pg_count) =
       Wamtml.sum_results_max "cnt1" "tot1" "r1" "style002p" pg_results
     in
@@ -107,7 +104,6 @@ let test002s site pg_results =
 (** 003p: How many images appear to be for decorative purposes only *)
 let test003p site page =
   let test_id = "style003p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let page_images =
       try Hashtbl.find tag_tbl "IMG"
@@ -121,16 +117,18 @@ let test003p site page =
           let attr_val = Html.attr_value (Html.get_attribute b "src") in
           let page_name = Page.pagename page in
           let img_path = Stringlib.construct_uri_path page_name attr_val in
-            if debug then print_endline (attr_val ^ " :: " ^ img_path);
+            msg attr_val img_path;
             try
               let img = Hashtbl.find site_images img_path in
               let (h,w) = Graphicfile.get_graphic_file_dimensions img in
-                if debug then Printf.printf "Dimensions: %s: %d %d\n" img_path h w;
+                msg "dimensions" (Printf.sprintf "%s: %d %d\n" img_path h w);
                 if ( h < 4 || w < 4)
                 then (count + 1, found + 1, total + 1)
                 else (count, found + 1, total + 1)
-            with Not_found -> ((if debug then Printf.printf "Not found: %s\n" img_path);
-                               (count, found, total + 1))
+            with Not_found -> (
+              msg "Not found" img_path;
+              (count, found, total + 1)
+            )
               | _ -> (count, found, total + 1)
         )
         else (count, found, total + 1)
@@ -149,7 +147,6 @@ let test003p site page =
 (** 003s: Sitewide average of 003p *)
 let test003s site pg_results =
   let test_id = "style003s" in
-    Testutil.msg test_id;
     let (sum_count, sum_found, sum_total, pg_count) =
       Wamtml.sum_3_results "cnt1" "cnt2" "tot1" "style003p" pg_results
     in
@@ -167,7 +164,6 @@ let test003s site pg_results =
 (** 004p: Counts of inline style tags found *)
 let test004p site page =
   let test_id = "style004p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
 
     let b        = Testutil.count_tags tbl "B" in
@@ -200,7 +196,6 @@ let test004p site page =
 (** 004s: Sitewide average of 004p *)
 let test004s site pg_results =
   let test_id = "style004s" in
-    Testutil.msg test_id;
     let (sum_t, pg_count) =
       Wamtml.sum_result "tot1" "style004p" pg_results
     in
@@ -216,7 +211,6 @@ let test004s site pg_results =
 (** 005p: Count of elements with color attribute *)
 let test005p site page =
   let test_id = "style005p" in
-    Testutil.msg test_id;
     let elements = Testutil.get_elements_with_attribute "color" page in
     let results = [
       ("cnt1", List.length elements)
@@ -227,7 +221,6 @@ let test005p site page =
 (** 005s: Sitewide average of 005p *)
 let test005s site pg_results =
   let test_id = "style005s" in
-    Testutil.msg test_id;
     let (sum_c, pg_count) =
       Wamtml.sum_result "cnt1" "style005p" pg_results
     in

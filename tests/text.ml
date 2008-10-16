@@ -7,6 +7,7 @@ open Page
 open Testutil
 open Wamtml
 
+(* ---------------------------------------------------------------- *)
 let element_with_alt_text e_name page =
   let tbl = Html.tag_tbl (Page.document page) in
   let e_lst =
@@ -54,7 +55,6 @@ let element_with_children e_name page =
 (** 001p: return num of images with alt text out of total images *)
 let test001p site page =
   let test_id = "text001p" in
-    Testutil.msg test_id;
     let (count, total) = element_with_alt_text "IMG" page in
     let percent = Testutil.pct_of_ints count total in
     let results = [
@@ -68,7 +68,6 @@ let test001p site page =
 (** 001s: sitewide aggregation of 001p results *)
 let test001s site pg_results =
   let test_id = "text001s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text001p" pg_results
     in
@@ -86,7 +85,6 @@ let test001s site pg_results =
     embed elements *)
 let test002p site page =
   let test_id = "text002p" in
-    Testutil.msg test_id;
     let (count, total) = element_with_alt_text "EMBED" page in
     let percent = Testutil.pct_of_ints count total in
     let results = [
@@ -100,7 +98,6 @@ let test002p site page =
 (** 002s: sitewide aggregation of 002p results *)
 let test002s site pg_results =
   let test_id = "text002s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text002p" pg_results
     in
@@ -118,7 +115,6 @@ let test002s site pg_results =
     applet elements *)
 let test003p site page =
   let test_id = "text003p" in
-    Testutil.msg test_id;
     let (count, total) = element_with_alt_text "APPLET" page in
     let percent = Testutil.pct_of_ints count total in
     let results = [
@@ -132,7 +128,6 @@ let test003p site page =
 (** 003s: sitewide aggregation of 003p results *)
 let test003s site pg_results =
   let test_id = "text003s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text003p" pg_results
     in
@@ -150,7 +145,6 @@ let test003s site pg_results =
     out of total object elements. *)
 let test004p site page =
   let test_id = "text004p" in
-    Testutil.msg test_id;
     let (ratio, objects_with_content, object_count) =
       element_with_children "OBJECT" page
     in
@@ -165,7 +159,6 @@ let test004p site page =
 (** 004s: sitewide aggregation of 004p results *)
 let test004s site pg_results =
   let test_id = "text004s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text004p" pg_results
     in
@@ -183,7 +176,6 @@ let test004s site pg_results =
     out of total images *)
 let test005p site page =
   let test_id = "text005p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let img_elements =
       try
@@ -206,7 +198,6 @@ let test005p site page =
 (** 005s: sitewide aggregation of 005p results *)
 let test005s site pg_results =
   let test_id = "text005s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text005p" pg_results
     in
@@ -224,7 +215,6 @@ let test005s site pg_results =
     out of total images *)
 let test006p site page =
   let test_id = "text006p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let img_elements =
       try
@@ -249,7 +239,6 @@ let test006p site page =
 (** 006s: sitewide aggregation of 006p results *)
 let test006s site pg_results =
   let test_id = "text006s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "text006p" pg_results
     in

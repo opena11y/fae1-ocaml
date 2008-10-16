@@ -7,6 +7,7 @@ open Page
 open Testutil
 open Wamtml
 
+(* ---------------------------------------------------------------- *)
 let has_mouseover_and_focus page =
   let onmouseover_list = Testutil.get_elements_with_attribute "onmouseover" page in
   let onfocus = Testutil.count_elements_with_attribute "onfocus" onmouseover_list in
@@ -23,7 +24,6 @@ let has_mouseout_and_blur page =
 (** 001p: How many elements with mouseover also have onfocus *)
 let test001p site page =
   let test_id = "auto001p" in
-    Testutil.msg test_id;
     let (count, total) = has_mouseover_and_focus page in
     let percent = Testutil.pct_of_ints count total in
     let results = [
@@ -37,7 +37,6 @@ let test001p site page =
 (** 001s: Sitewide results for test001p *)
 let test001s site pg_results=
   let test_id = "auto001s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "auto001p" pg_results
     in
@@ -54,7 +53,6 @@ let test001s site pg_results=
 (** 002p: How many elements with mouseout also have onblur *)
 let test002p site page =
   let test_id = "auto002p" in
-    Testutil.msg test_id;
     let (count, total) = has_mouseout_and_blur page in
     let percent = Testutil.pct_of_ints count total in
     let results = [
@@ -68,7 +66,6 @@ let test002p site page =
 (** 002s: Sitewide results for test002p *)
 let test002s site pg_results =
   let test_id = "auto002s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "auto002p" pg_results
     in
@@ -85,7 +82,6 @@ let test002s site pg_results =
 (** 003p: Calls to document.write and document.writeln *)
 let test003p site page =
   let test_id = "auto003p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let scripts =
       try
@@ -118,7 +114,6 @@ let test003p site page =
 (** 003s: Sitewide results for test003p *)
 let test003s site pg_results =
   let test_id = "auto003s" in
-    Testutil.msg test_id;
     let (sum_cnt1, sum_cnt2, pg_count) =
       Wamtml.sum_results "cnt1" "cnt2" "auto003p" pg_results
     in

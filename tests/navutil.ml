@@ -3,17 +3,8 @@
 *)
 
 let debug = false
-
-let msg label text =
-  if debug then print_endline (">>> " ^ label ^ ": " ^  text)
-
-let rec linefeed n =
-  if debug then (
-    if n > 0 then (
-      print_newline ();
-      linefeed (n - 1)
-    )
-  )
+let msg = (Testutil.msg debug)
+let linefeed = (Testutil.linefeed debug)
 
 (* ---------------------------------------------------------------- *)
 (**
@@ -64,6 +55,8 @@ let is_map_elem tag =
    menu: It has to contain at least one area element.
 *)
 let is_nav_map tag =
+  linefeed 2;
+  msg "is_nav_map" (Html.tag_name tag);
   let areas = Testutil.get_named_descendants tag ["AREA"] in
   let is_menu = (List.length areas) >= min_links in
   let has_hdr = is_preceded_by_heading_elem tag in
@@ -156,7 +149,7 @@ let rec is_item_link tag =
   )
 and is_nav_list tag =
   linefeed 2;
-  msg "is_nav_list" "entry point";
+  msg "is_nav_list" (Html.tag_name tag);
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with

@@ -2,8 +2,6 @@
    Utility functions for general use in page markup tests
 *)
 
-let debug = false;;
-
 (**
    Given a predicate to be applied to each Html.Tag in an htmlItem
    list, return the list of tags that satisfy the predicate.
@@ -449,10 +447,13 @@ let avg_of_ratios sum_ratios count =
 
 (* OUTPUT FUNCTIONS *)
 
-(** Debugging function controlled by variable debug. *)
-let msg s =
-  if debug
-  then print_endline ("Running " ^ s);;
+let msg debug_flag label text =
+  if debug_flag
+  then print_endline (">>> " ^ label ^ ": " ^  text)
+
+let linefeed debug_flag n =
+  if debug_flag
+  then print_string (String.make n '\n')
 
 (* HTMLITEM FUNCTIONS *)
 
@@ -562,7 +563,9 @@ let get_preceding_sibling (tag : Html.htmlItem Html.tag) =
 let is_preceded_by (tag : Html.htmlItem Html.tag) (names : string list) =
   let preceding_sibling = get_preceding_sibling tag in
     if is_or_contains_only preceding_sibling names
-    then true
+    then (
+      true
+    )
     else (
       if is_first_valid_child_of_named_parent tag ["DIV"]
       then (

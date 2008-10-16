@@ -11,7 +11,6 @@ open Navutil
 *)
 let test001p site page =
   let test_id = "nav001p" in
-    Testutil.msg test_id;
     let (has_lang_attr, is_valid_code) = Navutil.has_default_language page in
     let results = [
       ("b1", Testutil.int_of_bool has_lang_attr);
@@ -27,7 +26,6 @@ let test001p site page =
 *)
 let test003p site page =
   let test_id = "nav003p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
     let f a b =
@@ -54,7 +52,6 @@ let test003p site page =
 (** 004p: How many of the frames do not have titles? *)
 let test004p site page =
   let test_id = "nav004p" in
-    Testutil.msg test_id;
     let tag_tbl = (Html.tag_tbl (Page.document page)) in
     let frames = try Hashtbl.find tag_tbl "FRAME" with _ -> [] in
     let check_frames a b =
@@ -77,7 +74,6 @@ let test004p site page =
 (** 004s: sitewide aggregation of 004p results *)
 let test004s site pg_results =
   let test_id = "nav004s" in
-    Testutil.msg test_id;
     let (count_offenders, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav004p" pg_results
     in
@@ -94,7 +90,6 @@ let test004s site pg_results =
 (** 005p: Number of framesets with duplicate frame title attribute values. *)
 let test005p site page =
   let test_id = "nav005p" in
-    Testutil.msg test_id;
     let tag_tbl = (Html.tag_tbl (Page.document page)) in
     let framesets = try Hashtbl.find tag_tbl "FRAMESET" with _ -> [] in
     let get_frame_titles frameset =
@@ -123,7 +118,6 @@ let test005p site page =
 (** 005s: sitewide aggregation of 005p results *)
 let test005s site pg_results =
   let test_id = "nav005s" in
-    Testutil.msg test_id;
     let (count_offenders, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav005p" pg_results
     in
@@ -146,7 +140,6 @@ let test005s site pg_results =
 *)
 let test010p site page =
   let test_id = "nav010p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let titles = try Hashtbl.find tag_tbl "TITLE" with _ -> [] in
     let titles_with_content = List.filter Testutil.has_content titles in
@@ -161,7 +154,6 @@ let test010p site page =
 (** 010s: sitewide aggregation of 010p results *)
 let test010s site pg_results =
   let test_id = "nav010s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav010p" pg_results
     in
@@ -179,7 +171,6 @@ let test010s site pg_results =
 *)
 let test011p site page =
   let test_id = "nav011p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let titles = try Hashtbl.find tag_tbl "TITLE" with _ -> [] in
     let count = List.length titles in
@@ -193,7 +184,6 @@ let test011p site page =
 (** 011s: sitewide aggregation of 011p results *)
 let test011s site pg_results =
   let test_id = "nav011s" in
-    Testutil.msg test_id;
     let (count, pg_count) =
       Wamtml.sum_result "b1" "nav011p" pg_results
     in
@@ -209,7 +199,6 @@ let test011s site pg_results =
 (** 012s: Are all the title elements for all the pages unique? *)
 let test012s site pg_results =
   let test_id = "nav012s" in
-    Testutil.msg test_id;
     let f a b =
       let title = b.html_title in
         a@[title]
@@ -251,7 +240,6 @@ let test012s site pg_results =
 *)
 let test020p site page =
   let test_id = "nav020p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
     let h1s_with_content = List.filter Testutil.has_content_with_img_alt h1s in
@@ -266,7 +254,6 @@ let test020p site page =
 (** 020s: sitewide aggregation of 020p results *)
 let test020s site pg_results =
   let test_id = "nav020s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav020p" pg_results
     in
@@ -284,7 +271,6 @@ let test020s site pg_results =
 *)
 let test021p site page =
   let test_id = "nav021p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
     let h1s_with_content = List.filter Testutil.has_content h1s in
@@ -299,7 +285,6 @@ let test021p site page =
 (** 021s: sitewide aggregation of 021p results *)
 let test021s site pg_results =
   let test_id = "nav021s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav021p" pg_results
     in
@@ -317,7 +302,6 @@ let test021s site pg_results =
 *)
 let test022p site page =
   let test_id = "nav022p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
     let count = List.length h1s in
@@ -331,7 +315,6 @@ let test022p site page =
 (** 022s: sitewide aggregation of 022p results *)
 let test022s site pg_results =
   let test_id = "nav022s" in
-    Testutil.msg test_id;
     let (count, pg_count) =
       Wamtml.sum_result "b1" "nav022p" pg_results
     in
@@ -349,7 +332,6 @@ let test022s site pg_results =
 *)
 let test023p site page =
   let test_id = "nav023p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h1s = try Hashtbl.find tbl "H1" with _ -> [] in
     let count = List.length h1s in
@@ -363,7 +345,6 @@ let test023p site page =
 (** 023s: sitewide aggregation of 023p results *)
 let test023s site pg_results =
   let test_id = "nav023s" in
-    Testutil.msg test_id;
     let (count, pg_count) =
       Wamtml.sum_result "b1" "nav023p" pg_results
     in
@@ -384,7 +365,6 @@ let test023s site pg_results =
 *)
 let test024p site page =
   let test_id = "nav024p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let titles = try Hashtbl.find tag_tbl "TITLE" with _ -> [] in
     let h1s = try Hashtbl.find tag_tbl "H1" with _ -> [] in
@@ -416,7 +396,6 @@ let test024p site page =
 (** 024s: sitewide aggregation of 024p results *)
 let test024s site pg_results =
   let test_id = "nav024s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav024p" pg_results in
     let percent = Testutil.pct_of_ints count total in
@@ -439,7 +418,6 @@ let test024s site pg_results =
 *)
 let test030p site page =
   let test_id = "nav030p" in
-    Testutil.msg test_id;
     let subheadings = get_subheading_elements page in
     let subheadings_with_content = List.filter Testutil.has_content_with_img_alt subheadings in
     let total = List.length subheadings in
@@ -453,7 +431,6 @@ let test030p site page =
 (** 030s: sitewide aggregation of 030p results *)
 let test030s site pg_results =
   let test_id = "nav030s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav030p" pg_results
     in
@@ -472,7 +449,6 @@ let test030s site pg_results =
 *)
 let test031p site page =
   let test_id = "nav031p" in
-    Testutil.msg test_id;
     let subheadings = get_subheading_elements page in
     let subheadings_with_content = List.filter Testutil.has_content subheadings in
     let total = List.length subheadings in
@@ -486,7 +462,6 @@ let test031p site page =
 (** 031s: sitewide aggregation of 031p results *)
 let test031s site pg_results =
   let test_id = "nav031s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav031p" pg_results
     in
@@ -507,7 +482,6 @@ let test031s site pg_results =
 *)
 let test032p site page =
   let test_id = "nav032p" in
-    Testutil.msg test_id;
 
     (* get all of the heading elements in document order *)
     let names = ["H1"; "H2"; "H3"; "H4"; "H5"; "H6"] in
@@ -554,7 +528,6 @@ let test032p site page =
 (** 032s: sitewide aggregation of 032p results *)
 let test032s site pg_results =
   let test_id = "nav032s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav032p" pg_results
     in
@@ -572,7 +545,6 @@ let test032s site pg_results =
 (*
 let test033p site page =
   let test_id = "nav033p" in
-    Testutil.msg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
     let h2 = try Hashtbl.find tbl "H2" with _ -> [] in
     let h3 = try Hashtbl.find tbl "H3" with _ -> [] in
@@ -597,7 +569,6 @@ let test033p site page =
 (*
 let test033s site pg_results =
   let test_id = "nav033s" in
-    Testutil.msg test_id;
     let (r2, r3, r4, r5, r6, total, pg_count) =
       Wamtml.sum_6_results "r2" "r3" "r4" "r5" "r6" "tot1" "nav033p" pg_results
     in
@@ -624,7 +595,6 @@ let test033s site pg_results =
 *)
 let test041p site page =
   let test_id = "nav041p" in
-    Testutil.msg test_id;
     let doc_model = Html.doc_model (Page.document page) in
     let h1s = Testutil.get_elements_with_name "H1" page in
     let cnt_h1s = List.length h1s in
@@ -644,7 +614,6 @@ let test041p site page =
 (** 041s: sitewide aggregation of 041p results *)
 let test041s site pg_results =
   let test_id = "nav041s" in
-    Testutil.msg test_id;
     let (sum_c, sum_t, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav041p" pg_results
     in
@@ -664,7 +633,6 @@ let test041s site pg_results =
 *)
 let test042p site page =
   let test_id = "nav042p" in
-    Testutil.msg test_id;
     let doc_model = Html.doc_model (Page.document page) in
     let h1s = Testutil.get_elements_with_name "H1" page in
     let cnt_h1s = List.length h1s in
@@ -684,7 +652,6 @@ let test042p site page =
 (** 042s: sitewide aggregation of 042p results *)
 let test042s site pg_results =
   let test_id = "nav042s" in
-    Testutil.msg test_id;
     let (sum_c, sum_t, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav042p" pg_results
     in
@@ -705,7 +672,6 @@ let test042s site pg_results =
 *)
 let test043p site page =
   let test_id = "nav043p" in
-    Testutil.msg test_id;
     let tag_tbl = (Html.tag_tbl (Page.document page)) in
     let area_tags = try Hashtbl.find tag_tbl "AREA" with _ -> [] in
     let a_tags = try Hashtbl.find tag_tbl "A" with _ -> [] in
@@ -737,7 +703,6 @@ let test043p site page =
 (** 043s: sitewide aggregation of 043p results *)
 let test043s site pg_results =
   let test_id = "nav043s" in
-    Testutil.msg test_id;
     let (count, total, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav043p" pg_results
     in
@@ -762,7 +727,6 @@ let test043s site pg_results =
 *)
 let test050p site page =
   let test_id = "nav050p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     (* label elements *)
     let labels = try Hashtbl.find tag_tbl "LABEL" with _ -> [] in
@@ -784,7 +748,6 @@ let test050p site page =
 (** 050s: sitewide aggregation of 050p results *)
 let test050s site pg_results =
   let test_id = "nav050s" in
-    Testutil.msg test_id;
     let (count_labels, total_labels, count_legends, total_legends, pg_count) =
       Wamtml.sum_4_results "cnt1" "tot1" "cnt2" "tot2" "nav050p" pg_results
     in
@@ -807,7 +770,6 @@ let test050s site pg_results =
 *)
 let test051p site page =
   let test_id = "nav051p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let textareas = try Hashtbl.find tag_tbl "TEXTAREA" with _ -> [] in
     let selects = try Hashtbl.find tag_tbl "SELECT" with _ -> [] in
@@ -864,7 +826,6 @@ let test051p site page =
 (** 051s: sitewide aggregation of 051p results *)
 let test051s site pg_results =
   let test_id = "nav051s" in
-    Testutil.msg test_id;
     let (offenders, control_count, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav051p" pg_results
     in
@@ -886,7 +847,6 @@ let test051s site pg_results =
 *)
 let test052p site page =
   let test_id = "nav052p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let inputs =
       let all_inputs =
@@ -930,7 +890,6 @@ let test052p site page =
 (** 052s: sitewide aggregation of 052p results *)
 let test052s site pg_results =
   let test_id = "nav052s" in
-    Testutil.msg test_id;
     let (offenders, input_count, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav052p" pg_results
     in
@@ -952,7 +911,6 @@ let test052s site pg_results =
 *)
 let test053p site page =
   let test_id = "nav053p" in
-    Testutil.msg test_id;
     let tag_tbl = Html.tag_tbl (Page.document page) in
     let inputs =
       let all_inputs =
@@ -993,7 +951,6 @@ let test053p site page =
 (** 053s: sitewide aggregation of 053p results *)
 let test053s site pg_results =
   let test_id = "nav053s" in
-    Testutil.msg test_id;
     let (offenders, input_count, pg_count) =
       Wamtml.sum_results "cnt1" "tot1" "nav053p" pg_results
     in
