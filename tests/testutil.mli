@@ -22,12 +22,10 @@ val count_elements_with_attribute :
 val get_attribute_values :
   string -> Html.htmlItem Html.tag list -> string list;;
 
+val is_named_element :
+  Html.htmlItem Html.tag -> string list -> bool;;
 val has_attribute_get_value :
   Html.htmlItem Html.tag -> string -> bool * string;;
-val get_named_ancestors :
-  Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
-val has_named_ancestor :
-  Html.htmlItem Html.tag -> string list -> bool;;
 val get_named_descendants :
   Html.htmlItem Html.tag -> string list -> Html.htmlItem Html.tag list;;
 val count_named_descendants :
@@ -43,8 +41,6 @@ val has_content :
 val has_content_with_img_alt :
   Html.htmlItem Html.tag -> bool;;
 val all_text_content_in_named_descendant :
-  Html.htmlItem Html.tag -> string list -> bool;;
-val all_text_content_in_named_ancestor :
   Html.htmlItem Html.tag -> string list -> bool;;
 
 val get_tags :
@@ -91,5 +87,7 @@ val msg :
 
 val item_to_string :
   Html.htmlItem -> string;;
-val get_preceding_sibling :
-  Html.htmlItem Html.tag -> Html.htmlItem;;
+val is_or_contains_only :
+  Html.htmlItem -> string list -> bool;;
+val is_preceded_by :
+  Html.htmlItem Html.tag -> string list -> bool;;

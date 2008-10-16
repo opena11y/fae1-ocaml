@@ -29,27 +29,21 @@ let get_subheading_elements page =
     (h2@h3@h4@h5@h6);;
 
 (**
-   List of valid heading element names.
+   Some element names for identifying tags.
 *)
-let heading_names = ["H1";"H2";"H3";"H4";"H5";"H6"]
+let heading_names   = ["H1";"H2";"H3";"H4";"H5";"H6"]
+let map_names       = ["MAP"]
+let link_names      = ["A"]
+let list_names      = ["UL";"OL"]
 
-(**
-   Determine whether tag is a heading element.
-*)
-let is_heading_elem (tag : Html.htmlItem Html.tag) =
-  List.mem (Html.tag_name tag) heading_names
+let is_or_contains_only_link_elem (item : Html.htmlItem) =
+  Testutil.is_or_contains_only item link_names
 
-(**
-   Given an htmlItem, determine whether (a) it is a heading element, or
-   (b) it has a descendant that is a heading element and all of its text
-   content is contained by that element.
-*)
-let is_or_contains_only_heading_elem (item : Html.htmlItem) =
-  match item with
-      Html.Tag tag ->
-        is_heading_elem tag
-        || Testutil.all_text_content_in_named_descendant tag heading_names
-    | _ -> false;;
+let is_preceded_by_heading_elem (tag : Html.htmlItem Html.tag) =
+  Testutil.is_preceded_by tag heading_names
+
+let is_preceded_by_link_elem (tag : Html.htmlItem Html.tag) =
+  Testutil.is_preceded_by tag link_names
 
 (**
    Minimum number of links for map or list to be considered a navigation bar.
@@ -63,8 +57,7 @@ let min_links = 1;;
    Determine whether tag is a map element.
 *)
 let is_map_elem tag =
-  let name = Html.tag_name tag in
-    name = "MAP";;
+  Testutil.is_named_element tag map_names
 
 (**
    Criterion for a map element to be considered a navigation
@@ -73,7 +66,7 @@ let is_map_elem tag =
 let is_nav_map tag =
   let areas = Testutil.get_named_descendants tag ["AREA"] in
   let is_menu = (List.length areas) >= min_links in
-  let has_hdr = is_or_contains_only_heading_elem (Testutil.get_preceding_sibling tag) in
+  let has_hdr = is_preceded_by_heading_elem tag in
     (is_menu, has_hdr);;
 
 (* ---------------------------------------------------------------- *)
@@ -83,20 +76,7 @@ let is_nav_map tag =
    Determine whether tag is an ordered or unordered list element.
 *)
 let is_list_elem tag =
-  let name = Html.tag_name tag in
-    name = "OL" || name = "UL";;
-
-(**
-   Determine whether tag is a link element, or it has a descendant
-   that is a link element and all of its text content is contained
-   by that element.
-*)
-let is_or_contains_only_link_elem (item : Html.htmlItem) =
-  match item with
-      Html.Tag tag ->
-        Html.tag_name tag = "A"
-        || Testutil.all_text_content_in_named_descendant tag ["A"]
-    | _ -> false;;
+  Testutil.is_named_element tag list_names
 
 (**
    The functions is_item_link and is_nav_list are mutually
@@ -176,7 +156,7 @@ let rec is_item_link tag =
   )
 and is_nav_list tag =
   linefeed 2;
-  msg "is_nav_list" (Html.get_node_content "" [Testutil.get_preceding_sibling tag]);
+  msg "is_nav_list" "entry point";
   let list_items = Testutil.get_child_elements tag in
   let rec count num lst =
     match lst with
@@ -192,30 +172,28 @@ and is_nav_list tag =
     msg "items_with_links" (string_of_int items_with_links);
     if (items_with_links >= min_links) && (item_count - items_with_links) <= 1
     then (
-      let preceding_sibling = Testutil.get_preceding_sibling tag in
-        msg "preceding_sibling" (Testutil.item_to_string preceding_sibling);
-        if is_or_contains_only_heading_elem preceding_sibling
-        then (
-          msg "is_nav_list" "T T";
-          (true, true)
-        )
-        else (
-          let parent = Html.tag_parent tag in
-            match parent with
-                Html.Tag t -> (
-                  if (Html.tag_name t) = "LI" (* this is a nested list *)
+      if is_preceded_by_heading_elem tag
+      then (
+        msg "is_nav_list" "T T";
+        (true, true)
+      )
+      else (
+        let parent = Html.tag_parent tag in
+          match parent with
+              Html.Tag t -> (
+                if (Html.tag_name t) = "LI" (* this is a nested list *)
+                then (
+                  if is_preceded_by_link_elem tag
                   then (
-                    if is_or_contains_only_link_elem preceding_sibling
-                    then (
-                      msg "is_nav_list" "T T";
-                      (true, true)
-                    )
-                    else (true, false)
+                    msg "is_nav_list" "T T";
+                    (true, true)
                   )
                   else (true, false)
                 )
-              | _ -> (true, false)
-        )
+                else (true, false)
+              )
+            | _ -> (true, false)
+      )
     )
     else (
       msg "is_nav_list" "F F";

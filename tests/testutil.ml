@@ -152,6 +152,13 @@ let get_attribute_values name elements =
 (* FUNCTIONS WITH TAG ARG *)
 
 (**
+   Given a tag and a list of names, return boolean value indicating
+   whether the tag name is a member of the list of names.
+*)
+let is_named_element (tag : Html.htmlItem Html.tag) (names : string list) =
+  List.mem (Html.tag_name tag) names
+
+(**
    Given a tag and an attribute name, return a tuple pair with the
    following values: (1) boolean indicating whether the attribute was
    found on the element; (2) string value of the attribute (an empty
@@ -161,36 +168,6 @@ let has_attribute_get_value tag name =
   if Html.has_attribute tag name
   then (true, (Stringlib.normalize_space (Html.get_attribute_value tag name)))
   else (false, "");;
-
-(**
-   Given a tag and a list of element names, return the list of
-   elements that are ancestors of tag and whose names match
-   one of those in the list of names.
-*)
-let get_named_ancestors tag names =
-  let rec f elem =
-    let parent = Html.tag_parent elem in
-      match parent with
-          (Html.Tag t) ->
-            if Html.tag_name t = "TOP"
-            then []
-            else (
-              if List.mem (Html.tag_name t) names
-              then t :: f t
-              else f t
-            )
-        | _ -> []
-  in
-    f tag;;
-
-(**
-   Given a tag and a list of element names, return a boolean
-   value indicating whether the tag has an ancestor with one
-   of those names.
-*)
-let has_named_ancestor tag names =
-  let ancestors = get_named_ancestors tag names in
-    List.length ancestors > 0;;
 
 (**
    Given a tag and a list of element names, return the list of
@@ -300,21 +277,6 @@ let all_text_content_in_named_descendant tag names =
     then (
       let first_descendant = List.hd descendants in
       let inner_weight = get_trimmed_content_weight first_descendant in
-      let outer_weight = get_trimmed_content_weight tag in
-        inner_weight = outer_weight
-    )
-    else false;;
-
-(**
-   Given a tag and a list of names, test whether all text content of tag is
-   contained within first ancestor found with one of the specified names.
-*)
-let all_text_content_in_named_ancestor tag names =
-  let ancestors = get_named_ancestors tag names in
-    if List.length ancestors > 0
-    then (
-      let first_ancestor = List.hd ancestors in
-      let inner_weight = get_trimmed_content_weight first_ancestor in
       let outer_weight = get_trimmed_content_weight tag in
         inner_weight = outer_weight
     )
@@ -497,6 +459,13 @@ let msg s =
 let item_to_string (item : Html.htmlItem) =
   Stringlib.trim (Html.htmlItem_to_string "" item)
 
+let is_or_contains_only (item : Html.htmlItem) (names : string list) =
+  match item with
+    | Html.Tag tag ->
+        is_named_element tag names
+        || all_text_content_in_named_descendant tag names
+    | _ -> false;;
+
 let is_printable_string str =
   String.length (Stringlib.normalize_space str) > 0
 
@@ -509,6 +478,12 @@ let is_printable_entity str =
     | "nbsp" -> false
     | _ -> true
 
+(**
+   Given an htmlItem, return a boolean value indicating
+   whether the item is of interest. For example, empty strings,
+   non-printable entities, comments, processing instructions,
+   etc. are ignored.
+*)
 let is_valid_item (item : Html.htmlItem) =
   match item with
     | Html.Tag tag   -> true
@@ -516,6 +491,10 @@ let is_valid_item (item : Html.htmlItem) =
     | Html.Entity e  -> is_printable_entity e
     | _              -> false
 
+(**
+   Given an htmlItem list, return the next item that passes
+   the is_valid_item test, or Html.NULL if none is found.
+*)
 let rec next_valid_item (lst : Html.htmlItem list) =
   match lst with
     | hd :: tl ->
@@ -524,9 +503,17 @@ let rec next_valid_item (lst : Html.htmlItem list) =
         else next_valid_item tl
     | [] -> Html.NULL
 
+(**
+   Given an htmlItem list, return the number of items
+   that pass the is_valid_item test.
+*)
 let count_valid_items (lst : Html.htmlItem list) =
   List.length (List.filter is_valid_item lst)
 
+(**
+   Given an htmlItem and a list of htmlItems, return the sublist
+   of htmlItems that follow the given item.
+*)
 let rec get_following_items (item : Html.htmlItem) (lst : Html.htmlItem list) =
   match lst with
     | Html.Tag tag :: tl ->
@@ -537,6 +524,25 @@ let rec get_following_items (item : Html.htmlItem) (lst : Html.htmlItem list) =
         get_following_items item tl
     | [] -> []
 
+(**
+   Given a tag and a list of names, test whether the tag is the first child
+   of a parent element that has one of the specified names.
+*)
+let is_first_valid_child_of_named_parent (tag : Html.htmlItem Html.tag) (names : string list) =
+  let parent = Html.tag_parent tag in
+    match parent with
+      | Html.Tag p ->
+          if is_named_element p names
+          then (
+            let children = Html.tag_children p in
+              compare (Html.Tag tag) (next_valid_item children) = 0
+          )
+          else false
+      | _ -> false
+
+(**
+   Given a tag, return the htmlItem that immediately precedes it.
+*)
 let get_preceding_sibling (tag : Html.htmlItem Html.tag) =
   let parent = Html.tag_parent tag in
     match parent with
@@ -545,3 +551,27 @@ let get_preceding_sibling (tag : Html.htmlItem Html.tag) =
           let predecessors = get_following_items (Html.Tag tag) rev_siblings in
             next_valid_item predecessors
       | _ -> Html.NULL
+
+(**
+   Given a tag and a list of names, determine whether the tag is immediately
+   preceded by an element whose name is in the list of names, or by another
+   element that contains only such an element. If the given tag is wrapped
+   in a div element and is the first valid item of the div parent's children,
+   then make the same determination for the div re. the preceding item.
+*)
+let is_preceded_by (tag : Html.htmlItem Html.tag) (names : string list) =
+  let preceding_sibling = get_preceding_sibling tag in
+    if is_or_contains_only preceding_sibling names
+    then true
+    else (
+      if is_first_valid_child_of_named_parent tag ["DIV"]
+      then (
+        let parent = Html.tag_parent tag in
+          match parent with
+            | Html.Tag p ->
+                let item_preceding_div = get_preceding_sibling p in
+                  is_or_contains_only item_preceding_div names
+            | _ -> false
+      )
+      else false
+    )
