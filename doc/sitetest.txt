@@ -1,0 +1,56 @@
+Date: 16 October 2008
+SVN Revision: 27
+
+This document describes how to remove the code that causes all
+of the site tests to be run. Once these steps are performed, you
+can safely remove the site_tests list from tests/wamttest.ml.
+
+wamt.ml
+-------
+1. In fn. process_site
+
+* remove line:
+  let site_tests = Wamttest.site_tests in
+
+* remove lines:
+  let run_site_tests a b =
+    a@[(b site page_reports)]
+  in
+
+* remove line:
+  (List.fold_left run_site_tests [] site_tests)
+
+wamtml.ml
+---------
+1. In type def. wamt_site_report
+
+* remove field:
+  mutable site_test_results : wamt_test list;
+
+2. In fn. create_wamt_site_report
+
+* remove fn. parameter:
+  n_site_test_results
+
+* remove line:
+  site_test_results = n_site_test_results;
+
+3. In fn. wamt_site_report_to_xml
+
+* remove lines:
+  let tests_string =
+    let g a b =
+      (a^(wamt_test_to_xml b)) in
+      List.fold_left g "" r.site_test_results
+  in
+
+* remove substring from Printf.sprintf format string:
+  <site>\n%s</site>
+
+* remove last Printf.sprintf argument
+  tests_string;;
+
+Note: To preserve this code in case we actually decide to use site
+tests again, it may be better to eliminate calls to the site tests
+by simply removing all of the elements from the site_tests list in
+tests/wamttest.ml.

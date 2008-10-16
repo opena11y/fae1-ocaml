@@ -1,0 +1,191 @@
+Date: 16 October 2008
+SVN Revision: 27
+
+The heuristics that FAE employees regarding the evaluation of rules
+relating to navigation bars have been significantly expanded in
+comparison with previous versions. However, these heuristics do not
+cover all cases, in part because FAE limits its scope to accessibility
+testings, and does not try to be an HTML or XHTML markup validator.
+
+FAE now tests for navigation lists in the following manner:
+
+* A navigation list is defined as a list where each li item (with one
+  exception allowed) has the properties associated with an item_link.
+  An item_link is defined as an li element that contains either (a)
+  a link and nothing more, or (b) a link followed by a navigation list.
+
+* The rule states that each navigation list that precedes the last h1
+  element must itself be preceded by a heading element. This applies
+  strictly to non-nested lists.
+
+* A nested navigation list is one whose parent is an li element that is
+  itself part of a navigation list. A nested list must be preceded by
+  a link element. However, there may optionally be a heading element
+  following the link and immediately preceding the nested list.
+
+* The heading element that precedes the list (required for non-nested
+  lists and optional for nested lists) may itself be nested within other
+  elements arbitrarily, but only if all of the text content in the
+  hierarchy of nested elements is contained by the heading element.
+
+* A navigation list may be wrapped in a div element. If the heading
+  element does not immediately precede the list inside the div, the list
+  must be the first child of the div, and a heading element must
+  immediately precede the div that contains the list.
+
+* Because there are many markup patterns used for specifying navigation
+  lists, the following is an attempt to enumerate those patterns that
+  are acceptable according to FAE heuristics, and also provides examples
+  of patterns that are not acceptable.
+
+Basic pattern (acceptable)
+
+    <h2>heading text</h2>
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+    </ul>
+
+Heading element (h1 or preferably h2..h6)
+
+ 1. The heading element may contain arbitrary markup. FAE does not
+    check for HTML or XHTML validity. Examples (acceptable):
+
+    <h2><a href="#internal-link"/>heading text</h2>
+
+		<h2>heading text <span class="c1">and more text</span></h2>
+
+ 2. The heading element that precedes the list markup may be nested
+    within another element (such as a div) so long as there is no
+    extra text content contained by the wrapper that is not in the
+    heading element. Examples:
+
+    <!-- acceptable: -->
+
+    <div><h2>heading text</h2></div>
+
+    <div><a href="#"/><h2>heading text</h2></div>
+
+		<!-- not acceptable: -->
+
+    <div><h2>heading text</h2> and more text</div>
+
+    <div><a href="#">link text</a><h2>heading text</h2></div>
+
+ 3. If the heading element is nested within another element, the level
+    of nesting is not checked. So long as it meets the requirements
+    in #2 above, it passes. Example (acceptable):
+
+    <div><p><h2>heading text</h2></p></div>
+
+List element (ul or ol)
+
+ 1. The ul or ol element must contain li elements that contain either
+    a link only, as in the basic pattern above, or a link followed by
+    a navigation list. Example (acceptable):
+
+    <h2>heading text</h2>
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+      <li><a href="#3">submenu link text</a>
+         <ul>
+           <li><a href="#4">link text #4</a></li>
+           <li><a href="#5">link text #5</a></li>
+         </ul>
+      </li>
+    </ul>
+
+    The nested list may also be preceded by a heading element:
+
+    <!-- acceptable -->
+
+    <h2>heading text</h2>
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+      <li><a href="#3">submenu link text</a>
+         <h3>submenu heading text</h3>
+         <ul>
+           <li><a href="#4">link text #4</a></li>
+           <li><a href="#5">link text #5</a></li>
+         </ul>
+      </li>
+    </ul>
+
+ 2. The ul or ol element itself may be nested within a div element (and
+    only a div) provided that the nesting is only one level deep and the
+    list is the first child of the div.
+
+    <!-- acceptable -->
+
+    <h2>heading text</h2>
+    <div>
+      <ul>
+        <li><a href="#1">link text #1</a></li>
+        <li><a href="#2">link text #2</a></li>
+      </ul>
+    </div>
+
+    <h2>heading text</h2>
+    <div>
+      <ul>
+        <li><a href="#1">link text #1</a></li>
+        <li><a href="#2">link text #2</a></li>
+      </ul>
+			<p>paragraph following navigation list</p>
+    </div>
+
+    <!-- not acceptable -->
+
+    <h2>heading text</h2>
+    <div class="c1">
+      <div class="c2">
+        <ul>
+          <li><a href="#1">link text #1</a></li>
+          <li><a href="#2">link text #2</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- not acceptable -->
+
+    <h2>heading text</h2>
+    <div>
+			<p>paragraph preceding navigation list</p>
+      <ul>
+        <li><a href="#1">link text #1</a></li>
+        <li><a href="#2">link text #2</a></li>
+      </ul>
+    </div>
+
+ 3. The heading element must *immediately precede* the list markup. If
+    there is text between the heading and the list, it does not pass.
+
+    <!-- not acceptable -->
+
+    <h2>heading text</h2>additional text
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+    </ul>
+ 
+    <!-- not acceptable -->
+
+    <h2>heading text</h2>
+		<p>additional text</p>
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+    </ul>
+
+    <!-- not acceptable -->
+
+    <div>
+      <h2>heading text</h2>
+      additional text
+    </div>
+    <ul>
+      <li><a href="#1">link text #1</a></li>
+      <li><a href="#2">link text #2</a></li>
+    </ul>
