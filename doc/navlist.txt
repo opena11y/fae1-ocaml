@@ -1,7 +1,7 @@
 Date: 16 October 2008
 SVN Revision: 27
 
-The heuristics that FAE employees regarding the evaluation of rules
+The heuristics that FAE employs regarding the evaluation of rules
 relating to navigation bars have been significantly expanded in
 comparison with previous versions. However, these heuristics do not
 cover all cases, in part because FAE limits its scope to accessibility
