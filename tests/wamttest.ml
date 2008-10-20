@@ -3,11 +3,11 @@
    and a version string that identifies the current set of tests.
 *)
 
-let version = "1.0.2";;
+let version = "1.0.3"
 
 let page_tests = [
   Navigation.test001p;
-  Navigation.test003p; (* data tables: no site test *)
+  Navigation.test003p;
   Navigation.test004p;
   Navigation.test005p;
 
@@ -37,8 +37,10 @@ let page_tests = [
   Text.test002p;
   Text.test003p;
   Text.test004p;
-  Text.test005p;
-  Text.test006p;
+
+  Text.test010p;
+  Text.test011p;
+  Text.test012p;
 
   Automation.test001p;
   Automation.test002p;
@@ -49,55 +51,54 @@ let page_tests = [
   Style.test003p;
   Style.test004p;
   Style.test005p;
+  Style.test006p;
 
   Standards.test001p;
   Standards.test002p;
-];;
+]
 
 let site_tests = [
-  Navigation.test004s;
-  Navigation.test005s;
+  (* Navigation.test004s; *)
+  (* Navigation.test005s; *)
 
-  Navigation.test010s;
-  Navigation.test011s;
-  Navigation.test012s; (* unique titles: no page test *)
+  (* Navigation.test010s; *)
+  (* Navigation.test011s; *)
+  (* Navigation.test012s; *) (* unique titles: no page test *)
 
-  Navigation.test020s;
-  Navigation.test021s;
-  Navigation.test022s;
-  Navigation.test023s;
-  Navigation.test024s;
+  (* Navigation.test020s; *)
+  (* Navigation.test021s; *)
+  (* Navigation.test022s; *)
+  (* Navigation.test023s; *)
+  (* Navigation.test024s; *)
 
-  Navigation.test030s;
-  Navigation.test031s;
-  Navigation.test032s;
+  (* Navigation.test030s; *)
+  (* Navigation.test031s; *)
+  (* Navigation.test032s; *)
 
-  Navigation.test041s;
-  Navigation.test042s;
-  Navigation.test043s;
+  (* Navigation.test041s; *)
+  (* Navigation.test042s; *)
+  (* Navigation.test043s; *)
 
-  Navigation.test050s;
-  Navigation.test051s;
-  Navigation.test052s;
-  Navigation.test053s;
+  (* Navigation.test050s; *)
+  (* Navigation.test051s; *)
+  (* Navigation.test052s; *)
+  (* Navigation.test053s; *)
 
-  Text.test001s;
-  Text.test002s;
-  Text.test003s;
-  Text.test004s;
-  Text.test005s;
-  Text.test006s;
+  (* Text.test001s; *)
+  (* Text.test002s; *)
+  (* Text.test003s; *)
+  (* Text.test004s; *)
+
+  (* Text.test010s; *)
+  (* Text.test011s; *)
+  (* Text.test012s; *)
 
   Automation.test001s;
   Automation.test002s;
   (* Automation.test003s; *)
 
-  Style.test001s;
-  Style.test002s;
-  Style.test003s;
-  Style.test004s;
-  Style.test005s;
+  (* Style.test006s; *)
 
-  Standards.test001s;
-  Standards.test002s;
-];;
+  (* Standards.test001s; *)
+  (* Standards.test002s; *)
+]

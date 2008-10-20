@@ -2,10 +2,9 @@
    Tests relating to markup standards
 *)
 
-open Html
-open Page
-open Testutil
-open Wamtml
+let debug = true
+let msg = (Testutil.msg debug)
+let runmsg = (Testutil.msg debug "Running")
 
 (* ---------------------------------------------------------------- *)
 let has_doctype page =
@@ -43,6 +42,7 @@ let has_character_encoding page =
 (** 001p: Is doctype declared on page? *)
 let test001p site page =
   let test_id = "std001p" in
+    runmsg test_id;
     let results = [
       ("b1", Testutil.int_of_bool (has_doctype page))
     ] in
@@ -52,6 +52,7 @@ let test001p site page =
 (** 001s: Sitewide results for 001p *)
 let test001s site pg_results =
   let test_id = "std001s" in
+    runmsg test_id;
     let (count, total) =
       Wamtml.sum_result "b1" "std001p" pg_results
     in
@@ -67,6 +68,7 @@ let test001s site pg_results =
 (** 002p: Is character encoding declared with meta tag on page? *)
 let test002p site page =
   let test_id = "std002p" in
+    runmsg test_id;
     let results = [
       ("b1", Testutil.int_of_bool (has_character_encoding page))
     ] in
@@ -76,6 +78,7 @@ let test002p site page =
 (** 002s: Sitewide results for 002p *)
 let test002s site pg_results =
   let test_id = "std002s" in
+    runmsg test_id;
     let (count, total) =
       Wamtml.sum_result "b1" "std002p" pg_results
     in
