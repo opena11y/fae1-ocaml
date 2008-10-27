@@ -13,7 +13,7 @@
 *)
 let rec get_elements pred lst =
   match lst with
-      (Html.Tag t) :: tl -> (
+      Html.Tag t :: tl -> (
         if pred t
         then t :: get_elements pred ((Html.tag_children t) @ tl)
         else get_elements pred ((Html.tag_children t) @ tl)
@@ -279,6 +279,37 @@ let all_text_content_in_named_descendant tag names =
         inner_weight = outer_weight
     )
     else false;;
+
+(**
+   Predicate to determine whether an "A" element is focusable.
+*)
+let is_focusable_link (tag : Html.htmlItem Html.tag) =
+  assert (Html.tag_name tag = "A");
+  if Html.has_non_blank_attribute tag "href"
+  then true
+  else (
+    let (has_tabindex, tabindex_value) = has_attribute_get_value tag "tabindex" in
+      if has_tabindex
+      then
+        let tabindex =
+          try int_of_string tabindex_value
+          with _ -> -1
+        in
+          tabindex >= 0
+      else false
+  )
+
+(**
+   Predicate to determine whether an element is focusable.
+*)
+let is_focusable (tag :  Html.htmlItem Html.tag) =
+  if List.mem (Html.tag_name tag) ["AREA"; "BUTTON"; "INPUT"; "SELECT"; "TEXTAREA"]
+  then true
+  else (
+    if Html.tag_name tag = "A"
+    then is_focusable_link tag
+    else false
+  )
 
 (* FUNCTIONS WITH HASHTBL ARG *)
 

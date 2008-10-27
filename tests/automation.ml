@@ -7,128 +7,95 @@ let msg = (Testutil.msg debug)
 let runmsg = (Testutil.msg debug "Running")
 
 (* ---------------------------------------------------------------- *)
-let has_mouseover_and_focus page =
-  let onmouseover_list = Testutil.get_elements_with_attribute "onmouseover" page in
-  let onfocus = Testutil.count_elements_with_attribute "onfocus" onmouseover_list in
-  let onmouseover = List.length onmouseover_list in
-    (onfocus, onmouseover);;
+let is_nonfocusable (tag : Html.htmlItem Html.tag) =
+  not (Testutil.is_focusable tag)
 
-let has_mouseout_and_blur page =
+let count_nonfocusable_with_onclick page =
+  let onclick_list = Testutil.get_elements_with_attribute "onclick" page in
+  let onclick_nonfocusable = List.length (List.filter is_nonfocusable onclick_list) in
+  let total_onclick = List.length onclick_list in
+    (onclick_nonfocusable, total_onclick)
+
+let count_focusable_with_onmouseover_and_onfocus page =
+  let onmouseover_list = Testutil.get_elements_with_attribute "onmouseover" page in
+  let onmouseover_focusable = List.filter Testutil.is_focusable onmouseover_list in
+  let onfocus = Testutil.count_elements_with_attribute "onfocus" onmouseover_focusable in
+  let total_onmouseover_focusable = List.length onmouseover_focusable in
+    (onfocus, total_onmouseover_focusable);;
+
+let count_focusable_with_onmouseout_and_onblur page =
   let onmouseout_list = Testutil.get_elements_with_attribute "onmouseout" page in
-  let onblur = Testutil.count_elements_with_attribute "onblur" onmouseout_list in
-  let onmouseout = List.length onmouseout_list in
-    (onblur, onmouseout);;
+  let onmouseout_focusable = List.filter Testutil.is_focusable onmouseout_list in
+  let onblur = Testutil.count_elements_with_attribute "onblur" onmouseout_focusable in
+  let total_onmouseout_focusable = List.length onmouseout_focusable in
+    (onblur, total_onmouseout_focusable);;
+
+let count_nonfocusable_with_onmouseover_or_onmouseout page =
+  let onmouseover_list = Testutil.get_elements_with_attribute "onmouseover" page in
+  let onmouseover_nonfocusable = List.length (List.filter is_nonfocusable onmouseover_list) in
+  let onmouseout_list = Testutil.get_elements_with_attribute "onmouseout" page in
+  let onmouseout_nonfocusable = List.length (List.filter is_nonfocusable onmouseout_list) in
+    (onmouseover_nonfocusable, onmouseout_nonfocusable);;
 
 (* ---------------------------------------------------------------- *)
-(** 001p: How many elements with mouseover also have onfocus *)
+(**
+   001p: Number of nonfocusable elements with onclick attribute.
+*)
 let test001p site page =
   let test_id = "auto001p" in
     runmsg test_id;
-    let (count, total) = has_mouseover_and_focus page in
-    let percent = Testutil.pct_of_ints count total in
+    let (count, total) = count_nonfocusable_with_onclick page in
     let results = [
       ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 001s: Sitewide results for test001p *)
-let test001s site pg_results=
-  let test_id = "auto001s" in
-    runmsg test_id;
-    let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "auto001p" pg_results
-    in
-    let percent = Testutil.pct_of_ints count total in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 002p: How many elements with mouseout also have onblur *)
-let test002p site page =
-  let test_id = "auto002p" in
-    runmsg test_id;
-    let (count, total) = has_mouseout_and_blur page in
-    let percent = Testutil.pct_of_ints count total in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 002s: Sitewide results for test002p *)
-let test002s site pg_results =
-  let test_id = "auto002s" in
-    runmsg test_id;
-    let (count, total, pg_count) =
-      Wamtml.sum_results "cnt1" "tot1" "auto002p" pg_results
-    in
-    let percent = Testutil.pct_of_ints count total in
-    let results = [
-      ("cnt1", count);
-      ("tot1", total);
-      ("pct1", percent);
-      ("tot2", pg_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
-(** 003p: Calls to document.write and document.writeln *)
-let test003p site page =
-  let test_id = "auto003p" in
-    runmsg test_id;
-    let tag_tbl = Html.tag_tbl (Page.document page) in
-    let scripts =
-      try
-        Hashtbl.find tag_tbl "SCRIPT"
-      with _ -> []
-    in
-    let write_re = Str.regexp_case_fold "document.write[ ]*(" in
-    let writeln_re = Str.regexp_case_fold "document.writeln[ ]*(" in
-    let f a b =
-      let (write, writeln, total) = a in
-      let script_children = Html.tag_children b in
-      let script_text = Html.get_node_content "" script_children in
-      let write_count = Testutil.count_matches write_re script_text in
-      let writeln_count = Testutil.count_matches writeln_re script_text in
-        (write + write_count,
-         writeln + writeln_count,
-         total + write_count + writeln_count)
-    in
-    let (write_count, writeln_count, total) =
-      List.fold_left f (0,0,0) scripts
-    in
-    let results = [
-      ("cnt1", write_count);
-      ("cnt2", writeln_count);
       ("tot1", total)
     ] in
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 003s: Sitewide results for test003p *)
-let test003s site pg_results =
-  let test_id = "auto003s" in
+(**
+   002p: Number of focusable elements with onmouseover attribute that
+   do not have onfocus attribute.
+*)
+let test002p site page =
+  let test_id = "auto002p" in
     runmsg test_id;
-    let (sum_cnt1, sum_cnt2, pg_count) =
-      Wamtml.sum_results "cnt1" "cnt2" "auto003p" pg_results
-    in
-    let total = sum_cnt1 + sum_cnt2 in
-    let page_avg = Testutil.round (Testutil.ratio_of_ints total pg_count) in
+    let (count, total) = count_focusable_with_onmouseover_and_onfocus page in
+    let missing = total - count in
     let results = [
-      ("cnt1", sum_cnt1);
-      ("cnt2", sum_cnt2);
-      ("tot1", total);
-      ("tot2", pg_count);
-      ("avg1", page_avg)
+      ("cnt1", missing);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   003p: Number of focusable elements with mouseout attribute that
+   do not have onblur attribute.
+*)
+let test003p site page =
+  let test_id = "auto003p" in
+    runmsg test_id;
+    let (count, total) = count_focusable_with_onmouseout_and_onblur page in
+    let missing = total - count in
+    let results = [
+      ("cnt1", missing);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   004p: Number of nonfocusable elements with onmouseover or
+   onmouseout attribute.
+*)
+let test004p site page =
+  let test_id = "auto004p" in
+    runmsg test_id;
+    let (onmouseover, onmouseout) = count_nonfocusable_with_onmouseover_or_onmouseout page in
+    let total = onmouseover + onmouseout in
+    let results = [
+      ("cnt1", onmouseover);
+      ("cnt2", onmouseout);
+      ("tot1", total)
     ] in
       Wamtml.create_wamt_test test_id results;;

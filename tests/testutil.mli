@@ -42,6 +42,8 @@ val has_content_with_img_alt :
   Html.htmlItem Html.tag -> bool
 val all_text_content_in_named_descendant :
   Html.htmlItem Html.tag -> string list -> bool
+val is_focusable :
+  Html.htmlItem Html.tag -> bool
 
 val get_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> Html.htmlItem Html.tag list

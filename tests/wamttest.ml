@@ -3,11 +3,12 @@
    and a version string that identifies the current set of tests.
 *)
 
-let version = "1.0.3"
+let version = "1.0.4"
 
 let page_tests = [
-  Navigation.test001p;
-  Navigation.test003p;
+  Navigation.test001p; (* no site test *)
+  Navigation.test002p; (* no site test *)
+  Navigation.test003p; (* no site test *)
   Navigation.test004p;
   Navigation.test005p;
 
@@ -42,15 +43,16 @@ let page_tests = [
   Text.test011p;
   Text.test012p;
 
-  Automation.test001p;
-  Automation.test002p;
-  (* Automation.test003p; *)
+  Automation.test001p; (* no site test *)
+  Automation.test002p; (* no site test *)
+  Automation.test003p; (* no site test *)
+  Automation.test004p; (* no site test *)
 
-  Style.test001p;
-  Style.test002p;
-  Style.test003p;
-  Style.test004p;
-  Style.test005p;
+  Style.test001p; (* no site test *)
+  Style.test002p; (* no site test *)
+  Style.test003p; (* no site test *)
+  Style.test004p; (* no site test *)
+  Style.test005p; (* no site test *)
   Style.test006p;
 
   Standards.test001p;
@@ -92,10 +94,6 @@ let site_tests = [
   (* Text.test010s; *)
   (* Text.test011s; *)
   (* Text.test012s; *)
-
-  Automation.test001s;
-  Automation.test002s;
-  (* Automation.test003s; *)
 
   (* Style.test006s; *)
 

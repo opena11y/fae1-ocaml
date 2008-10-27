@@ -19,6 +19,20 @@ let test001p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
+(** 002p: Test uniqueness of accesskey attribute values. *)
+let test002p site page =
+  let test_id = "nav002p" in
+  let elements = Testutil.get_elements_with_attribute "accesskey" page in
+  let values = Testutil.get_attribute_values "accesskey" elements in
+  let (count, total) = Testutil.count_unique_strings values in
+  let offenders = total - count in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", total)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (** 003p: This test determines which tables on a page are data tables.
     It also stores some additional information about those tables so
     we don't have to process things multiple times. This test MUST be
