@@ -285,7 +285,7 @@ let all_text_content_in_named_descendant tag names =
 *)
 let is_focusable_link (tag : Html.htmlItem Html.tag) =
   assert (Html.tag_name tag = "A");
-  if Html.has_non_blank_attribute tag "href"
+  if Html.has_attribute tag "href"
   then true
   else (
     let (has_tabindex, tabindex_value) = has_attribute_get_value tag "tabindex" in
