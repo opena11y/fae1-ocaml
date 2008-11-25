@@ -33,56 +33,26 @@ let test002p site page =
     Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 003p: This test determines which tables on a page are data tables.
-    It also stores some additional information about those tables so
-    we don't have to process things multiple times. This test MUST be
-    run before other tests with dependences on that additional info.
-*)
-let test003p site page =
-  let test_id = "nav003p" in
-    let tag_tbl = Html.tag_tbl (Page.document page) in
-    let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
-    let f a b =
-      let (total_tables, data_tables, thead_count, th_count) = a in
-      let (is_data_table, (num_rows, num_columns), has_thead, has_th) =
-        Htmlutil.is_data_table b in
-        if is_data_table
-        then (total_tables + 1, data_tables + 1,
-              thead_count + (if has_thead then 1 else 0),
-              th_count + (if has_th then 1 else 0))
-        else (total_tables + 1, data_tables, thead_count, th_count)
-    in
-    let (table_count, data_table_count,with_thead_count, with_th_count) =
-      List.fold_left f (0,0,0,0) tables in
-    let results = [
-      ("cnt1", data_table_count);
-      ("tot1", table_count);
-      ("cnt2", with_thead_count);
-      ("cnt3", with_th_count)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
-
-(* ---------------------------------------------------------------- *)
 (** 004p: How many of the frames do not have titles? *)
 let test004p site page =
   let test_id = "nav004p" in
-    let tag_tbl = (Html.tag_tbl (Page.document page)) in
-    let frames = try Hashtbl.find tag_tbl "FRAME" with _ -> [] in
-    let check_frames a b =
-      if (Html.has_non_blank_attribute b "title")
-      then a + 1
-      else a
-    in
-    let count = List.fold_left check_frames 0 frames in
-    let total = List.length frames in
-    let offenders = total - count in
-    let percent = Testutil.pct_of_ints offenders total in
-    let results = [
-      ("cnt1", offenders);
-      ("tot1", total);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
+  let tag_tbl = (Html.tag_tbl (Page.document page)) in
+  let frames = try Hashtbl.find tag_tbl "FRAME" with _ -> [] in
+  let check_frames a b =
+    if (Html.has_non_blank_attribute b "title")
+    then a + 1
+    else a
+  in
+  let count = List.fold_left check_frames 0 frames in
+  let total = List.length frames in
+  let offenders = total - count in
+  let percent = Testutil.pct_of_ints offenders total in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", total);
+    ("pct1", percent)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
 (** 004s: sitewide aggregation of 004p results *)
@@ -104,29 +74,29 @@ let test004s site pg_results =
 (** 005p: Number of framesets with duplicate frame title attribute values. *)
 let test005p site page =
   let test_id = "nav005p" in
-    let tag_tbl = (Html.tag_tbl (Page.document page)) in
-    let framesets = try Hashtbl.find tag_tbl "FRAMESET" with _ -> [] in
-    let get_frame_titles frameset =
-      let frames = Testutil.get_named_child_elements frameset "FRAME" in
-        Testutil.get_attribute_values "title" frames
-    in
-    let check_framesets a b =
-      let titles = Stringlib.normalize_strings (get_frame_titles b) in
-      let (cnt_unique, tot_titles) = Testutil.count_unique_strings titles in
+  let tag_tbl = (Html.tag_tbl (Page.document page)) in
+  let framesets = try Hashtbl.find tag_tbl "FRAMESET" with _ -> [] in
+  let get_frame_titles frameset =
+    let frames = Testutil.get_named_child_elements frameset "FRAME" in
+      Testutil.get_attribute_values "title" frames
+  in
+  let check_framesets a b =
+    let titles = Stringlib.normalize_strings (get_frame_titles b) in
+    let (cnt_unique, tot_titles) = Testutil.count_unique_strings titles in
       if cnt_unique = tot_titles
       then a + 1
       else a
-    in
-    let count = List.fold_left check_framesets 0 framesets in
-    let total = List.length framesets in
-    let offenders = total - count in
-    let percent = Testutil.pct_of_ints offenders total in
-    let results = [
-      ("cnt1", offenders);
-      ("tot1", total);
-      ("pct1", percent)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
+  in
+  let count = List.fold_left check_framesets 0 framesets in
+  let total = List.length framesets in
+  let offenders = total - count in
+  let percent = Testutil.pct_of_ints offenders total in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", total);
+    ("pct1", percent)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
 (** 005s: sitewide aggregation of 005p results *)
@@ -976,3 +946,73 @@ let test053s site pg_results =
       ("tot2", pg_count)
     ] in
       Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(* DATA TABLES *)
+(* ---------------------------------------------------------------- *)
+
+(** 060p: Debug-only: which tables on a page are data tables. *)
+let test060p site page =
+  let test_id = "nav060p" in
+    let tag_tbl = Html.tag_tbl (Page.document page) in
+    let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
+    let data_tables = Page.data_tables page in
+    let results = [
+      ("cnt1", List.length data_tables);
+      ("tot1", List.length tables)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 061p: Number of data tables that do not use th element as first
+    cell of all rows or columns.
+*)
+let test061p site page =
+  let test_id = "nav061p" in
+  let data_tables = Page.data_tables page in
+  let pred table =
+    Tblutil.has_th_cell_for_all_columns table
+    || Tblutil.has_th_cell_for_all_rows table
+  in
+  let tables_with_th = List.filter pred data_tables in
+  let total_tables = List.length data_tables in
+  let offenders = total_tables - (List.length tables_with_th) in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", total_tables)
+  ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 062p: How many of the data tables do not have a summary attribute? *)
+let test062p site page =
+  let test_id = "nav062p" in
+  let data_tables = Page.data_tables page in
+  let check_data_tables a b =
+      if (Html.has_non_blank_attribute b "summary")
+      then a + 1
+      else a
+    in
+    let count = List.fold_left check_data_tables 0 data_tables in
+    let total = List.length data_tables in
+    let offenders = total - count in
+    let results = [
+      ("cnt1", offenders);
+      ("tot1", total)
+    ] in
+      Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 063p: Number of data tables with duplicate summary attribute values. *)
+let test063p site page =
+  let test_id = "nav063p" in
+  let data_tables = Page.data_tables page in
+  let summary_values = Testutil.get_attribute_values "summary" data_tables in
+  let normalized_values = Stringlib.normalize_strings summary_values in
+  let (cnt_unique, tot_values) = Testutil.count_unique_strings normalized_values in
+  let offenders = tot_values - cnt_unique in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", tot_values)
+  ] in
+    Wamtml.create_wamt_test test_id results;;

@@ -2,6 +2,8 @@
    Utility functions for general use in page markup tests
 *)
 
+exception TagNotFound
+
 (**
    Given a predicate to be applied to each Html.Tag in an htmlItem
    list, return the list of tags that satisfy the predicate.
@@ -13,7 +15,7 @@
 *)
 let rec get_elements pred lst =
   match lst with
-      Html.Tag t :: tl -> (
+    | Html.Tag t :: tl -> (
         if pred t
         then t :: get_elements pred ((Html.tag_children t) @ tl)
         else get_elements pred ((Html.tag_children t) @ tl)
@@ -21,7 +23,9 @@ let rec get_elements pred lst =
     | hd :: tl -> get_elements pred tl
     | [] -> [];;
 
+(* ------------------------------------------------ *)
 (* FUNCTIONS WITH PAGE ARG *)
+(* ------------------------------------------------ *)
 
 (**
    Given a list of element names and a page, return the list
@@ -59,7 +63,9 @@ let get_elements_with_name name page =
   let tag_tbl = Html.tag_tbl (Page.document page) in
     try Hashtbl.find tag_tbl name with _ -> [];;
 
+(* ------------------------------------------------ *)
 (* FUNCTIONS WITH TAG LIST ARG *)
+(* ------------------------------------------------ *)
 
 (**
    Given an element name and a list of elements, return the
@@ -68,7 +74,7 @@ let get_elements_with_name name page =
 *)
 let rec get_successor_elements name lst =
   match lst with
-      hd :: tl ->
+    | hd :: tl ->
         if Html.tag_name hd = name
         then tl
         else get_successor_elements name tl
@@ -83,7 +89,7 @@ let get_successor_elements_last_occurrence name lst =
   let lst1 = List.rev lst in
   let rec f lst1 lst2 =
     match lst1 with
-        hd :: tl ->
+      | hd :: tl ->
           if Html.tag_name hd = name
           then lst2
           else f tl (hd :: lst2)
@@ -98,7 +104,7 @@ let get_successor_elements_last_occurrence name lst =
 *)
 let rec is_member_element name lst =
   match lst with
-      hd :: tl ->
+    | hd :: tl ->
         if Html.tag_name hd = name
         then true
         else is_member_element name tl
@@ -111,7 +117,7 @@ let rec is_member_element name lst =
 let count_elements_with_name name lst =
   let rec count n l =
     match l with
-        hd :: tl ->
+      | hd :: tl ->
           if Html.tag_name hd = n
           then hd :: count n tl
           else count n tl
@@ -126,7 +132,7 @@ let count_elements_with_name name lst =
 let count_elements_with_attribute name lst =
   let rec count n l =
     match l with
-        hd :: tl ->
+      | hd :: tl ->
           if Html.has_attribute hd n
           then hd :: count n tl
           else count n tl
@@ -142,12 +148,26 @@ let count_elements_with_attribute name lst =
 let get_attribute_values name elements =
   let rec process lst =
     match lst with
-        hd :: tl -> (Html.get_attribute_value hd name) :: process tl
+      | hd :: tl ->
+          (Html.get_attribute_value hd name) :: process tl
       | [] -> []
   in
     process elements;;
 
+(**
+   Given an element name and a list of elements, return a boolean
+   value indicating whether all elements in the list have the
+   specified name.
+*)
+let all_elements_named name lst =
+  let pred t =
+    Html.tag_name t = name
+  in
+    List.for_all pred lst;;
+
+(* ------------------------------------------------ *)
 (* FUNCTIONS WITH TAG ARG *)
+(* ------------------------------------------------ *)
 
 (**
    Given a tag and a list of names, return boolean value indicating
@@ -175,7 +195,7 @@ let has_attribute_get_value tag name =
 let get_named_descendants tag names =
   let rec f lst =
     match lst with
-        (Html.Tag t) :: tl ->
+      | Html.Tag t :: tl ->
           if List.mem (Html.tag_name t) names
           then t :: f ((Html.tag_children t) @ tl)
           else f ((Html.tag_children t) @ tl)
@@ -193,7 +213,7 @@ let get_named_descendants tag names =
 let count_named_descendants tag names =
   let rec count num lst =
     match lst with
-        (Html.Tag t) :: tl ->
+      | Html.Tag t :: tl ->
           if List.mem (Html.tag_name t) names
           then count (num + 1) ((Html.tag_children t) @ tl)
           else count num ((Html.tag_children t) @ tl)
@@ -204,12 +224,12 @@ let count_named_descendants tag names =
     count 0 (Html.tag_children tag);;
 
 (**
-   Given a tag, return all of its child tag elements.
+   Given a tag, return all of its child elements.
 *)
 let get_child_elements tag =
   let rec f lst =
     match lst with
-        (Html.Tag t) :: tl ->
+      | Html.Tag t :: tl ->
           t :: f tl
       | hd :: tl ->
           f tl
@@ -219,17 +239,30 @@ let get_child_elements tag =
 
 (**
    Given a tag and an element name, return all the tag's
-   child elements of the specified name.
+   child elements that have the specified name.
 *)
 let get_named_child_elements tag name =
   let rec f lst =
     match lst with
-        (Html.Tag t) :: tl ->
+      | Html.Tag t :: tl ->
           if Html.tag_name t = name
           then t :: f tl
           else f tl
       | hd :: tl -> f tl
       | [] -> []
+  in
+    f (Html.tag_children tag);;
+
+(**
+   Given a tag, return its first child element. If it has
+   no child elements, raise TagNotFound exception.
+*)
+let get_first_child_element tag =
+  let rec f lst =
+    match lst with
+      | Html.Tag t :: tl -> t
+      | hd :: tl -> f tl
+      | [] -> raise TagNotFound
   in
     f (Html.tag_children tag);;
 
@@ -240,9 +273,9 @@ let get_named_child_elements tag name =
 let get_trimmed_content_weight tag =
   let rec f w lst =
     match lst with
-        hd :: tl -> (
+      | hd :: tl -> (
           match hd with
-              Html.Tag t -> f w ((Html.tag_children t) @ tl)
+            | Html.Tag t -> f w ((Html.tag_children t) @ tl)
             | Html.Entity s -> f (w + 1) tl
             | Html.Text s -> f (w + (String.length (Stringlib.trim s))) tl
             | _ -> f w tl
@@ -311,7 +344,54 @@ let is_focusable (tag :  Html.htmlItem Html.tag) =
     else false
   )
 
+(**
+   Given a tag and the name of the desired descendants, return a list
+   of the descendant elements, excluding any that are also descendants
+   of a nested element with the same tag name as the specified tag.
+*)
+let get_direct_descendants tag name =
+  let stop_tag_name = Html.tag_name tag in
+  let rec process lst =
+    match lst with
+      | Html.Tag t :: tl ->
+          if Html.tag_name t = name
+          then t :: process tl
+          else (
+            if Html.tag_name t = stop_tag_name
+            then process tl
+            else process ((Html.tag_children t) @ tl)
+          )
+      | hd :: tl -> process tl
+      | [] -> []
+  in
+    process (Html.tag_children tag);;
+
+(**
+   Given a tag and the name of a descendant element, return a
+   boolean value indicating whether the tag has a direct descendant
+   of that name, excluding any that are also descendants of a nested
+   element with the same tag name as the specified tag.
+*)
+let has_direct_descendant tag name =
+  let stop_tag_name = Html.tag_name tag in
+  let rec process lst =
+    match lst with
+      | Html.Tag t :: tl ->
+          if Html.tag_name t = name
+          then true
+          else (
+            if Html.tag_name t = stop_tag_name
+            then process tl
+            else process ((Html.tag_children t) @ tl)
+          )
+      | hd :: tl -> process tl
+      | [] -> false
+  in
+    process (Html.tag_children tag);;
+
+(* ------------------------------------------------ *)
 (* FUNCTIONS WITH HASHTBL ARG *)
+(* ------------------------------------------------ *)
 
 (**
    Given the Html.tag_tbl for a page and a key (tag name),
@@ -328,7 +408,9 @@ let count_tags tbl name =
   let tags = get_tags tbl name in
     List.length tags;;
 
+(* ------------------------------------------------ *)
 (* FUNCTIONS WITH STRING LIST ARG *)
+(* ------------------------------------------------ *)
 
 (**
    Given a list of strings, return a pair (tuple) of ints with first
@@ -338,7 +420,7 @@ let count_tags tbl name =
 let count_unique_strings strings =
   let rec f cnt lst =
     match lst with
-        hd :: tl ->
+      | hd :: tl ->
           let pred s =
             String.compare hd s = 0
           in
@@ -351,7 +433,9 @@ let count_unique_strings strings =
   let cnt_unique = f 0 strings in
     (cnt_unique, List.length strings);;
 
+(* ------------------------------------------------ *)
 (* STRING SEARCH FUNCTIONS *)
+(* ------------------------------------------------ *)
 
 (** Returns true if sub is found in str, false otherwise. *)
 let contains str sub =
@@ -420,7 +504,7 @@ let match_words src tgt =
     else (
       let rec f lst pos =
         match lst with
-            hd :: tl -> (
+          | hd :: tl -> (
               let re = Str.regexp_case_fold hd in
                 try
                   let idx = Str.search_forward re tgt pos in
@@ -432,7 +516,9 @@ let match_words src tgt =
         f words 0
     );;
 
+(* ------------------------------------------------ *)
 (* CALCULATION AND CONVERSION FUNCTIONS *)
+(* ------------------------------------------------ *)
 
 (** Convert boolean value to integer. *)
 let int_of_bool b = if b then 1 else 0;;
@@ -476,7 +562,9 @@ let avg_of_ratios sum_ratios count =
   then 0.0
   else (sum_ratios /. (float_of_int count));;
 
+(* ------------------------------------------------ *)
 (* OUTPUT FUNCTIONS *)
+(* ------------------------------------------------ *)
 
 let msg debug_flag label text =
   if debug_flag
@@ -486,7 +574,9 @@ let linefeed debug_flag n =
   if debug_flag
   then print_string (String.make n '\n')
 
+(* ------------------------------------------------ *)
 (* HTMLITEM FUNCTIONS *)
+(* ------------------------------------------------ *)
 
 let item_to_string (item : Html.htmlItem) =
   Stringlib.trim (Html.htmlItem_to_string "" item)

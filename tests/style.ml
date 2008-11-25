@@ -2,7 +2,7 @@
    Tests relating to style markup and CSS
 *)
 
-let debug = true
+let debug = false
 let msg = (Testutil.msg debug)
 let runmsg = (Testutil.msg debug "Running")
 
@@ -89,7 +89,7 @@ let test006p site page =
       try List.length (Hashtbl.find tag_tbl "TABLE")
       with Not_found -> 0
     in
-    let (nested_count, max_depth) = Htmlutil.count_nested_tables 0 0 0 doc_model in
+    let (nested_count, max_depth) = Tblutil.count_nested_tables 0 0 0 doc_model in
     let results = [
       ("cnt1", nested_count);
       ("tot1", table_count);

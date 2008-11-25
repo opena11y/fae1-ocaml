@@ -21,6 +21,8 @@ val count_elements_with_attribute :
   string -> Html.htmlItem Html.tag list -> int
 val get_attribute_values :
   string -> Html.htmlItem Html.tag list -> string list
+val all_elements_named :
+  string -> Html.htmlItem Html.tag list -> bool
 
 val is_named_element :
   Html.htmlItem Html.tag -> string list -> bool
@@ -34,6 +36,8 @@ val get_child_elements :
   Html.htmlItem Html.tag -> Html.htmlItem Html.tag list
 val get_named_child_elements:
   Html.htmlItem Html.tag -> string -> Html.htmlItem Html.tag list
+val get_first_child_element:
+  Html.htmlItem Html.tag -> Html.htmlItem Html.tag
 val get_trimmed_content_weight :
   Html.htmlItem Html.tag -> int
 val has_content :
@@ -44,6 +48,10 @@ val all_text_content_in_named_descendant :
   Html.htmlItem Html.tag -> string list -> bool
 val is_focusable :
   Html.htmlItem Html.tag -> bool
+val get_direct_descendants:
+  Html.htmlItem Html.tag -> string -> Html.htmlItem Html.tag list
+val has_direct_descendant:
+  Html.htmlItem Html.tag -> string -> bool
 
 val get_tags :
   (string, Html.htmlItem Html.tag list) Hashtbl.t -> string -> Html.htmlItem Html.tag list

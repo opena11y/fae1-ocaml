@@ -4,8 +4,9 @@ FLAGS=$1
 ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.mli
 ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.ml
 ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.cmx navutil.ml
+ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.cmx tblutil.ml
 
-ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx navigation.ml
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx tblutil.cmx navigation.ml
 
 ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx text.ml
 
@@ -13,8 +14,8 @@ ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa strin
 
 ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx standards.ml
 
-ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx style.ml
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa str.cmxa unix.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx tblutil.cmx style.ml
 
-ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa unix.cmxa str.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.ml
+ocamlopt -I ../ -I ../html -I ../graphics graphics.cmxa unix.cmxa str.cmxa stringlib.cmx html.cmxa page.cmx site.cmx testutil.cmx wamtml.cmx navutil.cmx tblutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.ml
 
-ocamlopt -a testutil.cmx navutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.cmx -o wamttests.cmxa
+ocamlopt -a testutil.cmx navutil.cmx tblutil.cmx navigation.cmx text.cmx automation.cmx standards.cmx style.cmx wamttest.cmx -o wamttests.cmxa

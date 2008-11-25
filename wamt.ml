@@ -82,6 +82,14 @@ let get_html_doctype page =
     process doc_model;;
 
 (**
+   Given a page, return the list of data tables.
+*)
+let get_data_tables page =
+  let tag_tbl = Html.tag_tbl (Page.document page) in
+  let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
+    List.filter Tblutil.is_data_table tables;;
+
+(**
    Given the top-level of a directory structure containing
    files to be analyzed and the list of wamt_files, create
    and initialize site structure.
@@ -104,6 +112,7 @@ let init_page fname site_dir =
     Page.set_pagename p normal_name;
     Page.set_doctype p (get_html_doctype p);
     Html.generate_tag_table doc;
+    Page.set_data_tables p (get_data_tables p);
     p;;
 
 (**

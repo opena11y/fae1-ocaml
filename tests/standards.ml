@@ -2,7 +2,7 @@
    Tests relating to markup standards
 *)
 
-let debug = true
+let debug = false
 let msg = (Testutil.msg debug)
 let runmsg = (Testutil.msg debug "Running")
 

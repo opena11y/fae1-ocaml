@@ -4,8 +4,7 @@ FLAGS=$1
 ocamlopt -c htmldtd.mli
 ocamlopt -c htmldtd.ml
 ocamlopt -c html.ml
-ocamlopt -c htmldtd.cmx html.cmx htmlutil.ml
-ocamlopt -a htmldtd.cmx html.cmx htmlutil.cmx -o html.cmxa
+ocamlopt -a htmldtd.cmx html.cmx -o html.cmxa
 
 cd ./parser
 ./compile_ntv $FLAGS
