@@ -146,7 +146,15 @@ let wamt_page_report_to_xml r =
 *)
 let urls_to_xml s =
   let rgx = Str.regexp ", " in
-    "\n<url>" ^ (Str.global_replace rgx "</url>\n<url>" s) ^ "</url>\n";;
+  let url_list = Str.split rgx s in
+  let prefix = "\n<url>" in
+  let suffix = "</url>\n" in
+  let rec process lst =
+    match lst with
+      | hd :: tl -> (prefix ^ (replace_xml_special_chars hd) ^ suffix) ^ process tl
+      | [] -> ""
+  in
+    process url_list;;
 
 (**
    Given a wamt_site_report, return an xml string representation
