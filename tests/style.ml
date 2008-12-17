@@ -7,19 +7,19 @@ let msg = (Testutil.msg debug)
 let runmsg = (Testutil.msg debug "Running")
 
 (* ---------------------------------------------------------------- *)
-(** 001p: Count number of center and font elements. *)
+(** 001p: Count number of font and center elements. *)
 let test001p site page =
   let test_id = "style001p" in
     runmsg test_id;
     let tbl = Html.tag_tbl (Page.document page) in
 
-    let center = Testutil.count_tags tbl "CENTER" in
     let font   = Testutil.count_tags tbl "FONT" in
-    let total  = (center + font) in
+    let center = Testutil.count_tags tbl "CENTER" in
+    let total  = (font + center) in
 
     let results = [
-      ("cnt1", center);
-      ("cnt2", font);
+      ("cnt1", font);
+      ("cnt2", center);
       ("tot1", total)
     ] in
       Wamtml.create_wamt_test test_id results;;
