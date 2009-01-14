@@ -162,6 +162,7 @@ let process_html_file file site =
   match file with
       Wamtfile.Html fname -> (
         timestamp := get_process_time ();
+        Filesys.append_to_log fname;
         let page = init_page fname site_dir in
         let page_tests = Wamttest.page_tests in
           Site.append_page_report site (run_page_report site page page_tests);
@@ -235,6 +236,8 @@ let wamt () =
   if (!span = "")
   then (span := "Unspecified");
 
+  Filesys.append_to_log ("<<BEGIN>> " ^ !rpt_name ^ " | " ^ !rpt_date);
+
   if debug
   then Printf.printf "start: %.3f\n" (Unix.gettimeofday ());
 
@@ -258,6 +261,8 @@ let wamt () =
           )
           else (
             Filesys.write_file !out_file report_string;
+            Filesys.append_to_log ("<<<END>>> " ^ !rpt_name ^ " | " ^ !rpt_date);
+            Filesys.close_log_file ();
           )
     )
     else (

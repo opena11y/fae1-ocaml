@@ -53,3 +53,42 @@ let write_file f s =
     flush ch;
     close_out ch;
     ();;
+
+(**
+   Open the log file for write/append/create, if logging_enabled.
+
+   Important Note: When logging is enabled, there is a bit of overhead
+   relating to opening, writing to, and closing the log file. It is
+   recommended that logging_enabled be set to true only when necessary
+   for debugging purposes.
+*)
+let logging_enabled = false;;
+type log_channel = Handle of out_channel | Nil;;
+
+let flags = [ Open_wronly; Open_append; Open_creat ];;
+let perm = 0o644;;
+let filename = "/var/www/cita/logs/wamt.log";;
+
+let log_file =
+  if logging_enabled
+  then Handle (open_out_gen flags perm filename)
+  else Nil;;
+
+(**
+   Append line to log file.
+*)
+let append_to_log s =
+  match log_file with
+    | Handle ch ->
+        output_string ch (s ^ "\n");
+        flush ch;
+    | Nil -> ();;
+
+(**
+   Close log file.
+*)
+let close_log_file () =
+  match log_file with
+    | Handle ch ->
+        close_out ch;
+    | Nil -> ();;
