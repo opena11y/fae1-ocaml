@@ -67,6 +67,8 @@ val icontains :
   string -> string -> bool
 val count_matches :
   Str.regexp -> string -> int
+val count_occurrences :
+  string -> string list -> int
 val replace_nonalphanumeric :
   string -> string
 val normalize_alphanumeric :

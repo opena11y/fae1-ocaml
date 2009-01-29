@@ -149,7 +149,7 @@ let get_attribute_values name elements =
   let rec process lst =
     match lst with
       | hd :: tl ->
-          (Html.get_attribute_value hd name) :: process tl
+          (Stringlib.trim (Html.get_attribute_value hd name)) :: process tl
       | [] -> []
   in
     process elements;;
@@ -469,6 +469,18 @@ let count_matches re str =
     with Not_found -> count
   in
     f 0 0;;
+
+(**
+   Given a string s and a list of strings lst, return the number
+   of occurrences of s in lst.
+*)
+let count_occurrences s lst =
+  let f a b =
+    if compare s b = 0
+    then a + 1
+    else a
+  in
+    List.fold_left f 0 lst;;
 
 (**
    Replace all contiguous sequences of nonalphanumeric characters

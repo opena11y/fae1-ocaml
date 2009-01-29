@@ -951,17 +951,21 @@ let test053s site pg_results =
 (* DATA TABLES *)
 (* ---------------------------------------------------------------- *)
 
-(** 060p: Debug-only: which tables on a page are data tables. *)
+(** 060p: Debug-only: Counts of both simple and complex data tables,
+    along with total number of tables.
+ *)
 let test060p site page =
   let test_id = "nav060p" in
-    let tag_tbl = Html.tag_tbl (Page.document page) in
-    let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
-    let data_tables = Page.data_tables page in
-    let results = [
-      ("cnt1", List.length data_tables);
-      ("tot1", List.length tables)
-    ] in
-      Wamtml.create_wamt_test test_id results;;
+  let tag_tbl = Html.tag_tbl (Page.document page) in
+  let tables = try Hashtbl.find tag_tbl "TABLE" with _ -> [] in
+  let data_tables = Page.data_tables page in
+  let complex_data_tables = List.filter Tblutil.is_complex_data_table data_tables in
+  let results = [
+    ("cnt1", List.length data_tables);
+    ("cnt2", List.length complex_data_tables);
+    ("tot1", List.length tables)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
 (** 061p: Number of data tables that do not use th element as first
@@ -1014,5 +1018,58 @@ let test063p site page =
   let results = [
     ("cnt1", offenders);
     ("tot1", tot_values)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 064p: Number of th elements in complex data tables that do not
+    have a unique id value.
+*)
+let test064p site page =
+  let test_id = "nav064p" in
+  let data_tables = Page.data_tables page in
+  let complex_data_tables = List.filter Tblutil.is_complex_data_table data_tables in
+  let all_elements_with_id = Testutil.get_elements_with_attribute "id" page in
+  let id_values = Testutil.get_attribute_values "id" all_elements_with_id in
+  let th_elements = Tblutil.get_all_th_elements complex_data_tables in
+  let pred th_elem =
+    Tblutil.has_unique_id th_elem id_values
+  in
+  let th_elements_with_unique_id = List.filter pred th_elements in
+  let offenders = (List.length th_elements) - (List.length th_elements_with_unique_id) in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", List.length th_elements);
+    ("tot2", List.length complex_data_tables)
+  ] in
+    Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
+(** 065p: Number of td elements in complex data tables that do not
+    have a headers attribute value with valid IDREFS to th elements
+    in the table via their id attributes.
+    @return cnt1: number of td offenders
+    @return tot1: total number of td elements
+    @return cnt2: number of complex data table offenders
+    @return tot2: total number of complex data tables
+*)
+let test065p site page =
+  let test_id = "nav065p" in
+  let data_tables = Page.data_tables page in
+  let complex_data_tables = List.filter Tblutil.is_complex_data_table data_tables in
+  let count a b =
+    let (c1, t1, c2) = a in
+    let (cnt, tot) = Tblutil.count_td_elements_with_proper_headers b in
+    let offenders = tot - cnt in
+      if offenders > 0
+      then (c1 + offenders, t1 + tot, c2 + 1)
+      else (c1, t1, c2)
+  in
+  let (cnt1, tot1, cnt2) = List.fold_left count (0, 0, 0) complex_data_tables in
+  let results = [
+    ("cnt1", cnt1);
+    ("tot1", tot1);
+    ("cnt2", cnt2);
+    ("tot2", List.length complex_data_tables)
   ] in
     Wamtml.create_wamt_test test_id results;;

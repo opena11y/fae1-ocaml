@@ -28,6 +28,9 @@ let rec count_nested_tables count depth max t_lst =
     | [] -> (count, max);;
 
 (* ---------------------------------------------------------------- *)
+(* ---------------------- SIMPLE DATA TABLES ---------------------- *)
+(* ---------------------------------------------------------------- *)
+
 let rec count_table_rows count tr_parent =
   let f a b =
     match b with
@@ -187,15 +190,191 @@ let has_th_cell_for_all_rows table =
     else false;;
 
 (* ---------------------------------------------------------------- *)
+(* ---------------------- COMPLEX DATA TABLES --------------------- *)
+(* ---------------------------------------------------------------- *)
+
+(**
+   Given a thead element, return a boolean value indicating whether
+   it contains multiple 'tr' elements.
+*)
+let has_multiple_tr_descendants thead_elem =
+  let tr_desc = Testutil.get_direct_descendants thead_elem "TR" in
+    List.length tr_desc > 1;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a tag and an attribute name, return a boolean value
+   indicating whether the tag has an attribute with the specified
+   name and its value is a number > 1.
+*)
+let has_attr_with_value_gt_one tag attr_name =
+  try
+    let attr = Html.get_attribute tag attr_name in
+      try
+        let value = int_of_string (Html.attr_value attr) in
+          value > 1
+      with _ -> false
+  with _ -> false;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a tag, return a boolean value indicating whether it has
+   a 'rowspan' or 'colspan' attribute with a numeric value > 1.
+*)
+let spans_multiple_rows_or_columns tag =
+  has_attr_with_value_gt_one tag "rowspan" ||
+  has_attr_with_value_gt_one tag "colspan";;
+
+(**
+   Given a 'tr' element, return a boolean value indicating whether
+   it has a 'td' or 'th' child that spans multiple rows or columns.
+*)
+let has_spanning_td_or_th_child tr_elem =
+  let td_elements = Testutil.get_named_child_elements tr_elem "TD" in
+  let th_elements = Testutil.get_named_child_elements tr_elem "TH" in
+    List.exists spans_multiple_rows_or_columns td_elements ||
+    List.exists spans_multiple_rows_or_columns th_elements;;
+
+(**
+   Given 'tr' element, return a boolean value indicating whether
+   it contains both a 'td' and multiple 'th' children.
+*)
+let has_td_and_multiple_th_children tr_elem =
+  let td_elements = Testutil.get_named_child_elements tr_elem "TD" in
+  let th_elements = Testutil.get_named_child_elements tr_elem "TH" in
+    List.length td_elements > 0 &&
+    List.length th_elements > 1;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a 'tr' element, return a boolean value indicating whether
+   it contains only 'th' children.
+*)
+let has_only_th_children tag =
+  let children = Testutil.get_child_elements tag in
+  let count_th = Testutil.count_elements_with_name "TH" children in
+    List.length children = count_th;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a tag and an attribute name, return a boolean value
+   indicating whether the tag has an attribute with the specified
+   name and its value is comprised of more than two whitespace-
+   separated substrings.
+*)
+let has_attr_with_multiple_values tag attr_name =
+  let rgx = Str.regexp "[ \t]+" in
+  try
+    let attr = Html.get_attribute tag attr_name in
+      try
+        let value = Html.attr_value attr in
+          List.length (Str.split rgx value) > 2
+      with _ -> false
+  with _ -> false;;
+
+(**
+   Given a tag, return a boolean value indicating whether it has
+   a 'headers' attribute with value containing embedded whitespace
+   characters.
+*)
+let has_multi_value_headers_attr tag =
+  has_attr_with_multiple_values tag "headers";;
+
+(**
+   Given a 'tr' element, return a boolean value indicating whether
+   it has a 'td' or 'th' child that has a 'headers' attribute that
+   has multiple (space-separated) values.
+*)
+let has_multi_value_headers_td_or_th_child tr_elem =
+  let td_elements = Testutil.get_named_child_elements tr_elem "TD" in
+  let th_elements = Testutil.get_named_child_elements tr_elem "TH" in
+    List.exists has_multi_value_headers_attr td_elements ||
+    List.exists has_multi_value_headers_attr th_elements;;
+
+(* ---------------------------------------------------------------- *)
 (**
    To qualify as a complex data table, the table element must:
    1. qualify as a simple data table AND
    2. contain at least one of the following:
       * thead element that contains more than one tr element
-      * tr element with a td or th element with rowspan or colspan attribute value > 1
-      * tr element that contains both td elements AND more than one th element
+      * tr element with a td or th element with rowspan or colspan
+        attribute value > 1
+      * tr element that contains both td elements AND more than one
+        th element
       * two or more tr elements that contain only th elements
-      * tr element with a td or th element with headers attribute that contains more than two idrefs
+      * tr element with a td or th element with headers attribute
+        that contains more than two idrefs
+   Note: is_complex_data_table assumes that its argument has already
+   been qualified as a simple data table!!!
 *)
 let is_complex_data_table table =
-  true;;
+  let thead_list = Testutil.get_direct_descendants table "THEAD" in
+  let tr_list = Testutil.get_direct_descendants table "TR" in
+    List.exists has_multiple_tr_descendants thead_list ||
+    List.exists has_spanning_td_or_th_child tr_list ||
+    List.exists has_td_and_multiple_th_children tr_list ||
+    List.length (List.filter has_only_th_children tr_list) > 1 ||
+    List.exists has_multi_value_headers_td_or_th_child tr_list;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a 'th' element, return a boolean value indicating whether
+   it has a nonempty and unique 'id' attribute/value.
+
+   Note: Ensure that each string in id_list has been trimmed of
+   leading and trailing whitespace.
+*)
+let has_unique_id th_elem id_list =
+  try
+    let attr = Html.get_attribute th_elem "id" in
+    let id_val = Stringlib.trim (Html.attr_value attr) in
+      if compare id_val "" = 0
+      then false
+      else Testutil.count_occurrences id_val id_list = 1
+  with _ -> false;;
+
+(**
+   Given a list of table elements, return a list of all 'th'
+   elements that are their direct descendants.
+*)
+let rec get_all_th_elements lst =
+  match lst with
+    | hd :: tl -> Testutil.get_direct_descendants hd "TH" @ get_all_th_elements tl
+    | [] -> [];;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a 'td' element and a list of 'id' values, return a boolean
+   value indicating whether all of the IDREF substrings in the 'td'
+   element's 'headers' attribute are members of the 'id' list.
+*)
+let has_headers_with_valid_idrefs td_elem id_list =
+  try
+    let attr = Html.get_attribute td_elem "headers" in
+    let headers = Str.split (Str.regexp "[ \t]+") (Html.attr_value attr) in
+    let count_refs a b =
+      if List.mem b id_list
+      then a + 1
+      else a
+    in
+      List.fold_left count_refs 0 headers = List.length headers
+  with _ -> false;;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Given a 'table' element, return a tuple whose first value is the
+   number of 'td' elements it contains with a 'headers' attribute
+   whose subvalues (IDREFS) each reference one of the table's 'th'
+   elements via that element's 'id' attribute value, and whose
+   second number is the total number of 'td' elements in the table.
+*)
+let count_td_elements_with_proper_headers table =
+  let td_list = Testutil.get_direct_descendants table "TD" in
+  let th_list = Testutil.get_direct_descendants table "TH" in
+  let id_values = Testutil.get_attribute_values "id" th_list in
+  let count a b =
+    if has_headers_with_valid_idrefs b id_values
+    then a + 1
+    else a
+  in
+    (List.fold_left count 0 td_list, List.length td_list);;
