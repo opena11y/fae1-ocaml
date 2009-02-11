@@ -67,7 +67,7 @@ type log_channel = Handle of out_channel | Nil;;
 
 let flags = [ Open_wronly; Open_append; Open_creat ];;
 let perm = 0o644;;
-let filename = "/var/www/cita/logs/wamt.log";;
+let filename = "/services/faedev/logs/wamt.log";;
 
 let log_file =
   if logging_enabled
