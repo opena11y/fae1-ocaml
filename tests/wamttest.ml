@@ -3,7 +3,7 @@
    and a version string that identifies the current set of tests.
 *)
 
-let version = "0905-1"
+let version = "0906-1"
 
 let page_tests = [
   Navigation.test001p; (* no site test *)

@@ -968,15 +968,16 @@ let test060p site page =
     Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 061p: Number of data tables that do not use th element as first
-    cell of all rows or columns.
+(** 061p: Number of data tables that do not use th elements as the
+    first cell of all columns AND as a cell somewhere (position is
+    arbitrary) in all rows.
 *)
 let test061p site page =
   let test_id = "nav061p" in
   let data_tables = Page.data_tables page in
   let pred table =
-    Tblutil.has_th_cell_for_all_columns table
-    || Tblutil.has_th_cell_for_all_rows table
+    Tblutil.has_th_1st_cell_for_all_columns table
+    && Tblutil.has_th_any_cell_for_all_rows table
   in
   let tables_with_th = List.filter pred data_tables in
   let total_tables = List.length data_tables in

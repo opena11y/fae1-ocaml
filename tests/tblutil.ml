@@ -160,7 +160,7 @@ let is_data_table table =
    whether the table has a 'th' element as the first cell of
    each column.
 *)
-let has_th_cell_for_all_columns table =
+let has_th_1st_cell_for_all_columns table =
   try
     let first_row = retrieve_first_row table in
     let child_elements = Testutil.get_child_elements first_row in
@@ -172,18 +172,16 @@ let has_th_cell_for_all_columns table =
 (* ---------------------------------------------------------------- *)
 (**
    Given a table element, return a boolean value indicating
-   whether the table has a 'th' element as the first cell of
-   each row.
+   whether the table has a 'th' element in each row (with
+   position being arbitrary).
 *)
-let has_th_cell_for_all_rows table =
+let has_th_any_cell_for_all_rows table =
   let tr_elements = Testutil.get_direct_descendants table "TR" in
     if List.length tr_elements > 0
     then (
       let pred tag =
-        try
-          let first_cell = Testutil.get_first_child_element tag in
-            Html.tag_name first_cell = "TH"
-        with _ -> false
+        let th_elements = Testutil.get_named_child_elements tag "TH" in
+          List.length th_elements > 0
       in
         List.for_all pred tr_elements
     )
