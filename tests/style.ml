@@ -61,7 +61,7 @@ let test004p site page =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
-(** 005p: Count number of center and font elements. *)
+(** 005p: Count number of blink and marquee elements. *)
 let test005p site page =
   let test_id = "style005p" in
     runmsg test_id;

@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 FLAGS=$1
 
 ocamlopt -c bytein.ml
@@ -6,4 +6,4 @@ ocamlopt -c bytein.cmx gif.ml
 ocamlopt -c bytein.cmx jpeg.ml
 ocamlopt -c bytein.cmx png.ml
 ocamlopt -c -I ./ bytein.cmx gif.cmx jpeg.cmx png.cmx graphicfile.ml
-ocamlopt -c -a -I ./ bytein.cmx gif.cmx jpeg.cmx png.cmx graphicfile.cmx -o graphics.cmxa
+ocamlopt -a -I ./ bytein.cmx gif.cmx jpeg.cmx png.cmx graphicfile.cmx -o graphics.cmxa

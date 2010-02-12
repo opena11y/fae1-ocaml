@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 
 # FLAGS: used in conjunction with -w option
 if [ -z $1 ] ; then FLAGS=y ; else FLAGS=$1 ; fi

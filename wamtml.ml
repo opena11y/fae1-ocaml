@@ -86,6 +86,7 @@ type wamt_site_report = {
   mutable urls : string;
   mutable depth : string;
   mutable span : string;
+  mutable dhtml : string;
   mutable version : string;
   mutable pages : wamt_page_report list;
   mutable site_test_results : wamt_test list;
@@ -95,7 +96,7 @@ type wamt_site_report = {
    Given a string, a list of page reports, and a list of wamt_tests,
    create a new wamt_site_report.
 *)
-let create_wamt_site_report n_site n_title n_date_time n_user n_urls n_depth n_span n_version n_pages n_site_test_results = {
+let create_wamt_site_report n_site n_title n_date_time n_user n_urls n_depth n_span n_dhtml n_version n_pages n_site_test_results = {
   site = n_site;
   title = n_title;
   date_time = n_date_time;
@@ -103,6 +104,7 @@ let create_wamt_site_report n_site n_title n_date_time n_user n_urls n_depth n_s
   urls = n_urls;
   depth = n_depth;
   span = n_span;
+  dhtml = n_dhtml;
   version = n_version;
   pages = n_pages;
   site_test_results = n_site_test_results;
@@ -171,13 +173,14 @@ let wamt_site_report_to_xml r =
       (a^(wamt_test_to_xml b)) in
       List.fold_left g "" r.site_test_results
   in
-    Printf.sprintf "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE results SYSTEM \"../xml/results.dtd\">\n<results>\n<meta>\n<title>%s</title>\n<date>%s</date>\n<user>%s</user>\n<urls>%s</urls>\n<depth>%s</depth>\n<span>%s</span>\n<version>%s</version>\n</meta>\n%s<site>\n%s</site>\n</results>\n"
+    Printf.sprintf "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE results SYSTEM \"../xml/results.dtd\">\n<results>\n<meta>\n<title>%s</title>\n<date>%s</date>\n<user>%s</user>\n<urls>%s</urls>\n<depth>%s</depth>\n<span>%s</span>\n<dhtml>%s</dhtml>\n<version>%s</version>\n</meta>\n%s<site>\n%s</site>\n</results>\n"
       (replace_xml_special_chars r.title)
       r.date_time
       r.user
       (urls_to_xml r.urls)
       r.depth
       r.span
+      r.dhtml
       r.version
       pages_string
       tests_string;;

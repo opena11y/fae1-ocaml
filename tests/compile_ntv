@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 FLAGS=$1
 
 ocamlopt -c -I ../ -I ../html html.cmxa page.cmx stringlib.cmx testutil.mli

@@ -26,6 +26,7 @@ let user     = ref "";;
 let url_list = ref "";;
 let depth    = ref "";;
 let span     = ref "";;
+let dhtml    = ref "";;
 
 let arg_list = [
   ("-dir", Arg.Set_string(site_dir),
@@ -43,7 +44,9 @@ let arg_list = [
   ("-depth", Arg.Set_string(depth),
    "The link-following depth used as argument to wget.");
   ("-span", Arg.Set_string(span),
-   "The span host option used as argument to wget.")
+   "The span host option used as argument to wget.");
+  ("-dhtml", Arg.Set_string(dhtml),
+   "Indicates whether DHTML content was included.")
 ];;
 
 let anon_fun s = ();;
@@ -203,6 +206,7 @@ let process_site site =
         !url_list
         !depth
         !span
+        !dhtml
         Wamttest.version
         (page_reports)
         (List.fold_left run_site_tests [] site_tests);;
@@ -235,6 +239,9 @@ let wamt () =
 
   if (!span = "")
   then (span := "Unspecified");
+
+  if (!dhtml = "")
+  then (dhtml := "Unspecified");
 
   Filesys.append_to_log ("<<BEGIN>> " ^ !rpt_name ^ " | " ^ !rpt_date);
 

@@ -1,0 +1,9 @@
+Apparently one factor that causes the parser to crash is processing files
+with many, many lines. And for some cases, a remedy is to strip out all
+blank lines.
+
+The file at http://www2.lib.msu.edu/general/library-hours-access.jsp,
+when downloaded by wget, has approximately 34,196 lines in it and causes
+wamt to crash by trying to use too much memory. After stripping out lines
+that contain only whitespace characters, the file contains 3,875 lines,
+and can then be processed by wamt without any problems.
