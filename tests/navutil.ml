@@ -319,3 +319,56 @@ let has_default_language page =
         else (false, false)
     )
     else (false, false);;
+
+(* ---------------------------------------------------------------- *)
+(**
+   Return a list containing all form controls that require a label
+   element to be associated with it, based on CITA Best Practices.
+*)
+let get_form_controls_req_label page =
+  let tag_tbl = Html.tag_tbl (Page.document page) in
+  let selects = try Hashtbl.find tag_tbl "SELECT" with _ -> [] in
+  let textareas = try Hashtbl.find tag_tbl "TEXTAREA" with _ -> [] in
+  let inputs =
+    let all_inputs =
+      try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
+    let f a b =
+      if (Html.has_attribute_with_value b "type" "text") ||
+        (Html.has_attribute_with_value b "type" "password") ||
+        (Html.has_attribute_with_value b "type" "checkbox") ||
+        (Html.has_attribute_with_value b "type" "radio") ||
+        (Html.has_attribute_with_value b "type" "file")
+      then a@[b]
+      else a
+    in
+      List.fold_left f [] all_inputs
+  in
+    (selects@textareas@inputs);;
+
+(**
+   Return a list containing all form controls
+*)
+let get_all_form_controls page =
+  let tag_tbl = Html.tag_tbl (Page.document page) in
+  let inputs = try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
+  let selects = try Hashtbl.find tag_tbl "SELECT" with _ -> [] in
+  let textareas = try Hashtbl.find tag_tbl "TEXTAREA" with _ -> [] in
+  let buttons = try Hashtbl.find tag_tbl "BUTTON" with _ -> [] in
+    (inputs@selects@textareas@buttons);;
+
+(**
+   Given an element and a list of id values, return a boolean value
+   indicating whether the element has a nonempty and unique 'id'
+   attribute/value.
+
+   Note: Ensure that each string in id_list of values has been
+   trimmed of leading and trailing whitespace.
+*)
+let has_unique_id elem id_list =
+  try
+    let attr = Html.get_attribute elem "id" in
+    let id_val = Stringlib.trim (Html.attr_value attr) in
+      if compare id_val "" = 0
+      then false
+      else Testutil.count_occurrences id_val id_list = 1
+  with _ -> false;;

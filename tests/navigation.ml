@@ -755,23 +755,7 @@ let test050s site pg_results =
 let test051p site page =
   let test_id = "nav051p" in
     let tag_tbl = Html.tag_tbl (Page.document page) in
-    let textareas = try Hashtbl.find tag_tbl "TEXTAREA" with _ -> [] in
-    let selects = try Hashtbl.find tag_tbl "SELECT" with _ -> [] in
-    let inputs =
-      let all_inputs =
-        try Hashtbl.find tag_tbl "INPUT" with _ -> [] in
-      let f a b =
-        if (Html.has_attribute_with_value b "type" "text") ||
-          (Html.has_attribute_with_value b "type" "password") ||
-          (Html.has_attribute_with_value b "type" "checkbox") ||
-          (Html.has_attribute_with_value b "type" "radio") ||
-          (Html.has_attribute_with_value b "type" "file")
-        then a@[b]
-        else a
-      in
-        List.fold_left f [] all_inputs
-    in
-    let controls = textareas@selects@inputs in
+    let controls = Navutil.get_form_controls_req_label page in
     let labels = try Hashtbl.find tag_tbl "LABEL" with _ -> [] in
     let check_label s l =
       Html.has_attribute_with_value l "for" s in
@@ -948,6 +932,33 @@ let test053s site pg_results =
       Wamtml.create_wamt_test test_id results;;
 
 (* ---------------------------------------------------------------- *)
+(** 054p: Number of form control elements with id attribute whose
+    value is not unique.
+*)
+let test054p site page =
+  let test_id = "nav054p" in
+  let controls = Navutil.get_all_form_controls page in
+
+  let has_id_attribute elem =
+    Html.has_attribute elem "id"
+  in
+  let controls_with_id = List.filter has_id_attribute controls in
+
+  let all_elements_with_id = Testutil.get_elements_with_attribute "id" page in
+  let all_id_values = Testutil.get_attribute_values "id" all_elements_with_id in
+
+  let has_unique_id elem =
+    Navutil.has_unique_id elem all_id_values
+  in
+  let controls_with_unique_id = List.filter has_unique_id controls_with_id in
+  let offenders = (List.length controls_with_id) - (List.length controls_with_unique_id) in
+  let results = [
+    ("cnt1", offenders);
+    ("tot1", List.length controls_with_id);
+  ] in
+    Wamtml.create_wamt_test test_id results;;
+
+(* ---------------------------------------------------------------- *)
 (* DATA TABLES *)
 (* ---------------------------------------------------------------- *)
 
@@ -1034,7 +1045,7 @@ let test064p site page =
   let id_values = Testutil.get_attribute_values "id" all_elements_with_id in
   let th_elements = Tblutil.get_all_th_elements complex_data_tables in
   let pred th_elem =
-    Tblutil.has_unique_id th_elem id_values
+    Navutil.has_unique_id th_elem id_values
   in
   let th_elements_with_unique_id = List.filter pred th_elements in
   let offenders = (List.length th_elements) - (List.length th_elements_with_unique_id) in

@@ -316,22 +316,6 @@ let is_complex_data_table table =
 
 (* ---------------------------------------------------------------- *)
 (**
-   Given a 'th' element, return a boolean value indicating whether
-   it has a nonempty and unique 'id' attribute/value.
-
-   Note: Ensure that each string in id_list has been trimmed of
-   leading and trailing whitespace.
-*)
-let has_unique_id th_elem id_list =
-  try
-    let attr = Html.get_attribute th_elem "id" in
-    let id_val = Stringlib.trim (Html.attr_value attr) in
-      if compare id_val "" = 0
-      then false
-      else Testutil.count_occurrences id_val id_list = 1
-  with _ -> false;;
-
-(**
    Given a list of table elements, return a list of all 'th'
    elements that are their direct descendants.
 *)
