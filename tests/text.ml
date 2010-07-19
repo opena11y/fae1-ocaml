@@ -143,16 +143,16 @@ let test003p site page =
           let attr_val = Html.attr_value (Html.get_attribute b "src") in
           let page_name = Page.pagename page in
           let img_path = Stringlib.construct_uri_path page_name attr_val in
-            msg attr_val img_path;
+            msg "Image" img_path;
             try
               let img = Hashtbl.find site_images img_path in
               let (h,w) = Graphicfile.get_graphic_file_dimensions img in
-                msg "dimensions" (Printf.sprintf "%s: %d %d\n" img_path h w);
+                msg "Dimensions (w x h)" (Printf.sprintf "%d x %d\n" w h);
                 if ( h < min_pixels || w < min_pixels)
                 then (count + 1, found + 1, total + 1)
                 else (count, found + 1, total + 1)
             with Not_found -> (
-              msg "Not found" img_path;
+              msg "Not found" (Printf.sprintf "%s\n" img_path);
               (count, found, total + 1)
             )
               | _ -> (count, found, total + 1)
