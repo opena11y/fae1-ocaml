@@ -980,7 +980,7 @@ let test060p site page =
 
 (* ---------------------------------------------------------------- *)
 (** 061p: Number of data tables that do not use th elements as the
-    first cell of all columns AND as a cell somewhere (position is
+    first cell of all columns OR as a cell somewhere (position is
     arbitrary) in all rows.
 *)
 let test061p site page =
@@ -988,7 +988,7 @@ let test061p site page =
   let data_tables = Page.data_tables page in
   let pred table =
     Tblutil.has_th_1st_cell_for_all_columns table
-    && Tblutil.has_th_any_cell_for_all_rows table
+    || Tblutil.has_th_any_cell_for_all_rows table
   in
   let tables_with_th = List.filter pred data_tables in
   let total_tables = List.length data_tables in
